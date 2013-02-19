@@ -14,6 +14,7 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.DefaultCaret;
 
 import java.awt.CardLayout;
 import java.awt.Color;
@@ -208,6 +209,8 @@ public class BasicWindow extends JFrame {
 		pnLogNav.add(btPrevious, BorderLayout.WEST);
 		
 		taInfo = new JTextArea();
+		DefaultCaret caret = (DefaultCaret)taInfo.getCaret();
+		caret.setUpdatePolicy( DefaultCaret.ALWAYS_UPDATE );
 		taInfo.setDropMode(DropMode.INSERT);
 		taInfo.setRows(5);
 		taInfo.setText("Info\ngoes\nhere\nyo");
