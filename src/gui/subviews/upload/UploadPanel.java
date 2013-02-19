@@ -3,46 +3,159 @@ package gui.subviews.upload;
 import gui.subviews.SubController;
 import gui.subviews.SubView;
 
+import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Image;
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileFilter;
+
+import net.miginfocom.swing.MigLayout;
 
 import photo.StitcherFacade;
 
-public class UploadPanel extends SubView {
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
+public class UploadPanel extends SubView implements Observer {
+
+	private JScrollPane spImages;
+	private JPanel pnImages;
 	/**
 	 * Create the panel.
-	 * @throws IOException 
 	 */
 	public UploadPanel() {
-		this.controller = new SubController( this, StitcherFacade.getInstance() );
+		controller = new UploadController( this, StitcherFacade.getInstance() );
 		
 		setLayout(new BorderLayout(0, 0));
 		
+		final Container parent = this.getParent();
 		JPanel pnButtons = new JPanel();
 		add(pnButtons, BorderLayout.EAST);
 		pnButtons.setLayout( new GridLayout( 3, 1, 0, 0 ) );
 		
-		JButton btAdd = new JButton("Hinzuf\u00FCgen");
+		JButton btAdd = new JButton("Hinzufügen");
+		btAdd.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JFileChooser chooser = new JFileChooser();
+				// We don't want "all files". Who knows what could happen!
+				chooser.setMultiSelectionEnabled( true );
+				// Implement image filter.
+				chooser.setFileFilter( new FileFilter() {
+					@Override
+					public boolean accept(File f) {
+						// Display it if it's a directory
+						if ( f.isDirectory() )
+							return true;
+						if ( f.isFile() ) {
+							String name = f.getName();
+							// On Unix/Mac many files don't have a dot
+							if ( name.lastIndexOf( "." ) > -1 ) {
+								// Check extension
+								String ext = name.substring( name.lastIndexOf( '.' ) + 1, name.length() );
+								return ext.equalsIgnoreCase( "jpg") ||
+									 ext.equalsIgnoreCase( "jpeg" ) ||
+									 ext.equalsIgnoreCase( "png");
+							}								
+						}
+						return false;
+					}
+
+					@Override
+					public String getDescription() {
+						return "*.jpeg, *.jpg, *.png";
+					}
+					
+				});
+				int action = chooser.showDialog( parent, "Hinzufügen" );
+				if ( action == JFileChooser.APPROVE_OPTION ) {
+					File[] files = chooser.getSelectedFiles();
+					for ( File file : files ) {
+						try {
+							//read image
+							BufferedImage img = ImageIO.read( file );
+							//register image at controller for further calculations
+							((UploadController) controller).registerImage( img );
+							
+							// resize
+							Image small;
+							float ratio = img.getWidth() / img.getHeight();
+							if ( ratio > 1 ) {
+								// landscape
+								small = img.getScaledInstance( 300, Math.round( 300/ratio) , 0 );
+							} else if ( ratio < 1 ){
+								// portrait
+								small = img.getScaledInstance( Math.round( 300/ratio ), 300, 0 );
+							} else  {
+								// square
+								small = img.getScaledInstance( 300, 300, 0 );
+							} 
+							
+							ImagePanel imgPanel = new ImagePanel( pnImages.getComponentCount(), file.getName(), small );
+							imgPanel.addPropertyChangeListener("number", new PropertyChangeListener()  {
+								
+								@Override
+								public void propertyChange(PropertyChangeEvent evt) {
+									int index = (int) evt.getOldValue();
+									pnImages.remove( index );
+									((UploadController)controller).unregisterImage( index );
+								}
+							});
+							pnImages.add( imgPanel );
+					
+							System.out.println( "Added image " + file.getName() + " ( " + img.getWidth() + " x " + img.getHeight() + " px )" );
+						} catch ( IOException ioex ) {
+							System.err.println( "Could not load " + file.getName() );
+							ioex.printStackTrace();
+						} catch ( Exception ex ) {
+							System.err.println( ex.toString() );
+							ex.printStackTrace();
+						}
+					}
+					spImages.revalidate();
+				}
+			}
+		});
+		
 		pnButtons.add(btAdd);
 		
-		JButton btRemove = new JButton("Entfernen");
-		pnButtons.add(btRemove);
-		
-		JScrollPane spImages = new JScrollPane( );
+		pnImages = new JPanel();
+		pnImages.setLayout( new FlowLayout( FlowLayout.LEFT ) );
+		//add( pnImages, BorderLayout.CENTER );
+		spImages = new JScrollPane( pnImages );
 		add(spImages, BorderLayout.CENTER);
-		
-		JPanel pnImages = new JPanel();
-		pnImages.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		pnImages.setSize( 350, 250 );
-		spImages.add( pnImages );
-		
+	}
+	@Override
+	public void update(Observable o, Object arg) {
+		System.out.println( "Delete image " + ( (int) arg ));
 	}
 
 }

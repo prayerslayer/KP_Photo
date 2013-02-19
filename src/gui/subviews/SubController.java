@@ -1,5 +1,7 @@
 package gui.subviews;
 
+import java.awt.image.BufferedImage;
+
 import javax.swing.JPanel;
 
 import photo.StitcherFacade;
