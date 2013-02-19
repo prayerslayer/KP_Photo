@@ -14,6 +14,8 @@ import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -51,7 +53,8 @@ public class BasicWindow extends JFrame {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private JLayeredPane content;
+	private JPanel content;
+	private CardLayout layout;
 	// dont delete them
 	private JTextArea taInfo;
 	private JButton btPrevious;
@@ -75,10 +78,9 @@ public class BasicWindow extends JFrame {
 		subviews.add( new OrientPanel() );
 		subviews.add( new BlendPanel() );
 		
-		for ( int i = subviews.size() - 1; i >= 0; i-- ) {
-			content.add( subviews.get( i ), BorderLayout.CENTER, i );
+		for ( SubView view : subviews ) {
+			content.add( view, BorderLayout.CENTER );
 		}
-		
 		this.redirectSystemStreams();
 	}
 	
@@ -117,9 +119,8 @@ public class BasicWindow extends JFrame {
 	 */
 	public void next() {
 		if ( this.activeStep + 1 < subviews.size() ) {
-			content.getComponent( this.activeStep ).setVisible( false );
 			this.activeStep += 1;
-			content.getComponent( this.activeStep ).setVisible( true );
+			layout.next( content );
 		}
 		System.out.println( this.activeStep );
 	}
@@ -129,9 +130,8 @@ public class BasicWindow extends JFrame {
 	 */
 	public void previous() {
 		if ( this.activeStep - 1 >= 0 ) {
-			content.getComponent( this.activeStep ).setVisible( false );
 			this.activeStep -= 1;
-			content.getComponent( this.activeStep ).setVisible( true );
+			layout.previous( content );
 		}
 		System.out.println( this.activeStep);
 	}
@@ -217,9 +217,10 @@ public class BasicWindow extends JFrame {
 		scrollPane.setAutoscrolls( true );
 		pnLogNav.add(scrollPane, BorderLayout.CENTER);
 		
-		content = new JLayeredPane();
+		content = new JPanel();
 		panel.add(content, BorderLayout.CENTER);
-		content.setLayout(new BorderLayout(0, 0));
+		layout = new CardLayout();
+		content.setLayout( layout );
 		
 		init();
 	}
