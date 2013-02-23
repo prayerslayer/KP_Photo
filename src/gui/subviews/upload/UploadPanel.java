@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -31,8 +32,6 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileFilter;
-
-import net.miginfocom.swing.MigLayout;
 
 import photo.StitcherFacade;
 
@@ -105,33 +104,26 @@ public class UploadPanel extends SubView implements Observer {
 							//register image at controller for further calculations
 							((UploadController) controller).registerImage( img );
 							
-							// resize
-							Image small;
-							float ratio = img.getWidth() / img.getHeight();
-							if ( ratio > 1 ) {
-								// landscape
-								small = img.getScaledInstance( 300, Math.round( 300/ratio) , 0 );
-							} else if ( ratio < 1 ){
-								// portrait
-								small = img.getScaledInstance( Math.round( 300/ratio ), 300, 0 );
-							} else  {
-								// square
-								small = img.getScaledInstance( 300, 300, 0 );
-							} 
-							
-							ImagePanel imgPanel = new ImagePanel( pnImages.getComponentCount(), file.getName(), small );
-							imgPanel.addPropertyChangeListener("number", new PropertyChangeListener()  {
+							ImagePanel imgPanel = new ImagePanel( file.getName(), img );
+							imgPanel.addPropertyChangeListener("delete", new PropertyChangeListener()  {
 								
 								@Override
 								public void propertyChange(PropertyChangeEvent evt) {
-									int index = (int) evt.getOldValue();
-									pnImages.remove( index );
-									((UploadController)controller).unregisterImage( index );
+									// delete it
+									BufferedImage img = ( BufferedImage ) evt.getOldValue();
+									((UploadController) controller).unregisterImage( img );
+									for ( Component panel : pnImages.getComponents() ) {
+										if ( ((ImagePanel) panel).getBufferedImage().equals( img ) ) {
+											pnImages.remove( panel );
+											// a little hack because revalidate() did not update the container when the last image was deleted. nor did validate() and invalidate()
+											spImages.setSize( spImages.getWidth() +1, spImages.getHeight() );
+										}
+									}
 								}
 							});
 							pnImages.add( imgPanel );
-					
 							System.out.println( "Added image " + file.getName() + " ( " + img.getWidth() + " x " + img.getHeight() + " px )" );
+							
 						} catch ( IOException ioex ) {
 							System.err.println( "Could not load " + file.getName() );
 							ioex.printStackTrace();

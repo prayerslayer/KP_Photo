@@ -15,17 +15,11 @@ public class UploadController extends SubController {
 	}
 	
 	public void registerImage(BufferedImage img) {
-		// TODO Auto-generated method stub
-		
+		StitcherFacade.getInstance().registerImage( img );
 	}
 	
 	public void unregisterImage( BufferedImage img ) {
-		
-	}
-
-	public void unregisterImage(int index) {
-		// TODO Auto-generated method stub
-		
+		StitcherFacade.getInstance().unregisterImage( img );
 	}
 
 }

@@ -17,13 +17,11 @@ public class ImagePanel extends JPanel {
 	private JButton btDelete;
 	private JLabel lbDescription;
 	private JLabel lbImage;
-	int nr = -1;
+	private BufferedImage img;
 	
-	//TODO kann nicht mit index die löschung indizieren, da sich der nach einer löschung ja ändert. muss feste nummern vergeben
-	
-	public ImagePanel( int number, String description, Image small ) {
+	public ImagePanel( String description, final BufferedImage img ) {
 		super();
-		nr = number;
+		this.img = img;
 		btDelete = new JButton();
 		lbDescription = new JLabel( description );
 		lbImage = new JLabel();
@@ -33,6 +31,20 @@ public class ImagePanel extends JPanel {
 		add( lbDescription, BorderLayout.SOUTH );
 		add( lbImage, BorderLayout.CENTER );
 		
+		// resize
+		Image small;
+		float ratio = img.getWidth() / img.getHeight();
+		if ( ratio > 1 ) {
+			// landscape
+			small = img.getScaledInstance( 300, Math.round( 300/ratio) , 0 );
+		} else if ( ratio < 1 ){
+			// portrait
+			small = img.getScaledInstance( Math.round( 300/ratio ), 300, 0 );
+		} else  {
+			// square
+			small = img.getScaledInstance( 300, 300, 0 );
+		} 
+		
 		btDelete.setSize( 32, 32 );
 		btDelete.setIcon( new ImageIcon( getClass().getResource( "/gui/images/trash.png" ) ) );
 		lbDescription.setHorizontalTextPosition( JLabel.CENTER );
@@ -40,8 +52,14 @@ public class ImagePanel extends JPanel {
 		
 		btDelete.addMouseListener( new MouseAdapter() {
 			public void mouseClicked( MouseEvent evt ) {
-				firePropertyChange("number", nr, -1 );
+				firePropertyChange( "delete", img, null );
 			}
 		});
 	}
+	
+	public BufferedImage getBufferedImage() {
+		return img;
+	}
+	
+	
 }
