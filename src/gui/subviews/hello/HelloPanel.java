@@ -19,4 +19,10 @@ public class HelloPanel extends SubView {
 		add(lbInfo, BorderLayout.CENTER);
 	}
 
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

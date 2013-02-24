@@ -10,4 +10,10 @@ public class OrientPanel extends SubView {
 		add(lblOrientpanel);
 	}
 
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

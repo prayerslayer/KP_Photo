@@ -10,4 +10,10 @@ public class AssociatePanel extends SubView {
 		add(lblAssociatepanel);
 	}
 
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

@@ -1,42 +1,26 @@
 package gui.subviews.upload;
 
-import gui.subviews.SubController;
 import gui.subviews.SubView;
 
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
 import javax.swing.filechooser.FileFilter;
 
 import photo.StitcherFacade;
 
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -148,6 +132,10 @@ public class UploadPanel extends SubView implements Observer {
 	@Override
 	public void update(Observable o, Object arg) {
 		System.out.println( "Delete image " + ( (int) arg ));
+	}
+	
+	public void init() {
+		//everything happens in constructors
 	}
 
 }

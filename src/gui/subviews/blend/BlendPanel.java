@@ -10,4 +10,10 @@ public class BlendPanel extends SubView {
 		add(lblBlendpanel);
 	}
 
+	@Override
+	public void init() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

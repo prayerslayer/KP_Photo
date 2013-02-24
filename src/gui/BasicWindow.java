@@ -122,6 +122,7 @@ public class BasicWindow extends JFrame {
 		if ( this.activeStep + 1 < subviews.size() ) {
 			this.activeStep += 1;
 			layout.next( content );
+			subviews.get( this.activeStep ).init();
 		}
 		System.out.println( this.activeStep );
 	}

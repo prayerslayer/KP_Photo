@@ -7,8 +7,9 @@ import javax.swing.JPanel;
  * @author xnikp
  *
  */
-public class SubView extends JPanel {
+public abstract class SubView extends JPanel {
 
 	protected SubController controller;
 	
+	public abstract void init();
 }

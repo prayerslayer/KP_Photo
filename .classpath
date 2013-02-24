@@ -5,5 +5,6 @@
 	<classpathentry kind="lib" path="/Users/xnikp/Documents/workspace/KP_Photo/libs/boofcv-v0.12-libs/BoofCV.jar"/>
 	<classpathentry kind="lib" path="/Users/xnikp/Documents/workspace/KP_Photo/libs/boofcv-v0.12-libs/EJML.jar"/>
 	<classpathentry kind="lib" path="/Users/xnikp/Documents/workspace/KP_Photo/libs/boofcv-v0.12-libs/GeoRegression.jar"/>
+	<classpathentry kind="lib" path="/Users/xnikp/Documents/workspace/KP_Photo/libs/boofcv-v0.12-libs/DDogleg.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

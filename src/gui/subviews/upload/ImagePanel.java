@@ -12,6 +12,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import util.Utility;
+
 public class ImagePanel extends JPanel {
 
 	private JButton btDelete;
@@ -32,18 +34,7 @@ public class ImagePanel extends JPanel {
 		add( lbImage, BorderLayout.CENTER );
 		
 		// resize
-		Image small;
-		float ratio = img.getWidth() / img.getHeight();
-		if ( ratio > 1 ) {
-			// landscape
-			small = img.getScaledInstance( 300, Math.round( 300/ratio) , 0 );
-		} else if ( ratio < 1 ){
-			// portrait
-			small = img.getScaledInstance( Math.round( 300/ratio ), 300, 0 );
-		} else  {
-			// square
-			small = img.getScaledInstance( 300, 300, 0 );
-		} 
+		Image small = Utility.resizeImage( img );
 		
 		btDelete.setSize( 32, 32 );
 		btDelete.setIcon( new ImageIcon( getClass().getResource( "/gui/images/trash.png" ) ) );
