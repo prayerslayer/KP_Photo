@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import boofcv.abst.feature.detect.interest.InterestPointDetector;
+import boofcv.alg.misc.GPixelMath;
 import boofcv.core.image.ConvertBufferedImage;
 import boofcv.factory.feature.detect.interest.FactoryInterestPoint;
 import boofcv.struct.BoofDefaults;
@@ -89,7 +90,7 @@ public class StitcherFacade {
 		return list;
 	}
 	
-	public List<InterestPoint> detectInterestPoints( BufferedImage img ) {
+	public List<InterestPoint> detectInterestPoints( BufferedImage img, FastHessianConfig config ) {
 		if ( img == null )
 		 	return null;
 		// check if image exists
@@ -97,15 +98,23 @@ public class StitcherFacade {
 		if ( image == null ) {
 			return null;
 		}
-		// check if already computed
-		if ( interestPoints.get( img ) != null ) {
-			return interestPoints.get( img );
-		}
+		//convert to grayscale image
+		ImageUInt8 gray = new ImageUInt8( img.getWidth(), img.getHeight() );
+		GPixelMath.averageBand(image, gray);
 		// compute
 		List<InterestPoint> ips = new LinkedList<InterestPoint>();
-		InterestPointDetector<ImageUInt8> detector = FactoryInterestPoint.fastHessian( 10f, 2, 100, 2, 9, 3, 4 );
-		detector.detect( image.getBand( 0 ) );
-		for( int i = 0; i <= detector.getNumberOfFeatures(); i++ ) {
+		// 10f, 2, 100, 2, 9, 3, 4
+		InterestPointDetector<ImageUInt8> detector = FactoryInterestPoint.fastHessian(
+				config.getDetectThreshold(),
+				config.getExtractRadius(),
+				config.getMaxFeaturesPerScale(),
+				config.getInitialSampleSize(),
+				config.getInitialSize(),
+				config.getNumberScalesPerOctave(),
+				config.getNumberOfOctaves() );
+		detector.detect( gray );
+		System.out.println( detector.getNumberOfFeatures() + " features detected" );
+		for( int i = 0; i < detector.getNumberOfFeatures(); i++ ) {
 			Point2D_F64 point = detector.getLocation( i );
 			InterestPoint ip = new InterestPoint( point.x, point.y, detector.getScale( i )*BoofDefaults.SCALE_SPACE_CANONICAL_RADIUS );
 			ips.add( ip );
@@ -113,5 +122,9 @@ public class StitcherFacade {
 		// add to computed values
 		interestPoints.put( img, ips );
 		return ips;
+	}
+
+	public List<InterestPoint> detectInterestPoints(BufferedImage img) {
+		return this.detectInterestPoints( img, new FastHessianConfig() );
 	}
 }

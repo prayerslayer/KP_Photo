@@ -14,6 +14,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import photo.FastHessianConfig;
 import photo.InterestPoint;
 import photo.StitcherFacade;
 import util.Utility;
@@ -27,17 +28,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JSlider;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.SwingConstants;
 
 public class DetectPanel extends SubView {
 	
 	private List<BufferedImage> images;
+	private FastHessianConfig config;
 	private Map<BufferedImage, Iterator<InterestPoint>> interests;
 	private int currentImage = 0;
 	private JLabel lbImage;
 	private JButton btPreviousImage;
 	private JButton btNextImage;
-	private JButton btNextIP;
-	private JButton btAllIP;
+	private JButton btFindIP;
+	private JButton btSettingsIP;
 	
 	public DetectPanel() {
 		setLayout(new BorderLayout(0, 0));
@@ -55,13 +62,13 @@ public class DetectPanel extends SubView {
 		
 		JPanel panel = new JPanel();
 		add(panel, BorderLayout.SOUTH);
-		panel.setLayout(new GridLayout(1, 0, 0, 0));
+		panel.setLayout(new GridLayout(0, 2, 0, 0));
 		
-		btNextIP = new JButton("Nächster Interest Point");
-		panel.add(btNextIP);
+		btSettingsIP = new JButton("Parameter einstellen");
+		panel.add(btSettingsIP);
 		
-		btAllIP = new JButton("Alle Interest Points");
-		panel.add(btAllIP);
+		btFindIP = new JButton("Finde Interest Points");
+		panel.add(btFindIP);
 	}
 	
 	public void init() {
@@ -69,7 +76,7 @@ public class DetectPanel extends SubView {
 		images = StitcherFacade.getInstance().getRegisteredImages();
 		interests = new HashMap<BufferedImage, Iterator<InterestPoint>>();
 		BufferedImage img = images.get( currentImage );
-		interests.put( img, ((DetectController)controller).getInterestPoints( img ) ); 
+		
 		lbImage.setIcon( new ImageIcon( Utility.resizeImage( img ) ) );
 		btPreviousImage.setEnabled( false );
 		btNextImage.setEnabled( images.size() > 1 );
@@ -87,22 +94,19 @@ public class DetectPanel extends SubView {
 				setEnabled( currentImage + 1 >= images.size());
 			}
 		});
-		btNextIP.addMouseListener( new MouseAdapter() {
+		btSettingsIP.addMouseListener( new MouseAdapter() {
 			public void mouseClicked( MouseEvent evt ) {
-				BufferedImage img = images.get( currentImage );
-				
-				Iterator<InterestPoint> iterator = interests.get( img );
-				if ( iterator.hasNext() ) {
-					InterestPoint ip = iterator.next();
-					drawInterestPoint( img, ip );
-					lbImage.setIcon( new ImageIcon( Utility.resizeImage( img ) ) );
+				ParameterDialog dlg = new ParameterDialog( config );
+				dlg.setVisible( true );
+				if ( dlg.isOK() ) {
+					config = dlg.getConfig();
 				}
 			}
 		});
-		btAllIP.addMouseListener( new MouseAdapter() {
+		btFindIP.addMouseListener( new MouseAdapter() {
 			public void mouseClicked( MouseEvent evt ) {
 				BufferedImage img = images.get( currentImage );
-				
+				interests.put( img, ((DetectController)controller).getInterestPoints( img, config ) ); 
 				Iterator<InterestPoint> iterator = interests.get( img );
 				while( iterator.hasNext() ) {
 					InterestPoint ip = iterator.next();

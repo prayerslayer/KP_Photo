@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import javax.swing.JPanel;
 
+import photo.FastHessianConfig;
 import photo.InterestPoint;
 import photo.StitcherFacade;
 import gui.subviews.SubController;
@@ -18,6 +19,10 @@ public class DetectController extends SubController {
 
 	public Iterator<InterestPoint> getInterestPoints(BufferedImage img) {
 		return stitcher.detectInterestPoints( img ).iterator();
+	}
+	
+	public Iterator<InterestPoint> getInterestPoints( BufferedImage img, FastHessianConfig config ) {
+		return stitcher.detectInterestPoints( img, config == null ? new FastHessianConfig() : config ).iterator();
 	}
 
 }
