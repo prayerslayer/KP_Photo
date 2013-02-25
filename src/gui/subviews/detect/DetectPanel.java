@@ -37,6 +37,11 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.SwingConstants;
 
+/**
+ * Panel to find interest points in images.
+ * @author xnikp
+ *
+ */
 public class DetectPanel extends SubView {
 	
 	private List<BufferedImage> images;
@@ -74,6 +79,9 @@ public class DetectPanel extends SubView {
 		panel.add(btFindIP);
 	}
 	
+	/**
+	 * Shows an image (with interest points, if available).
+	 */
 	private void showImage() {
 		BufferedImage img = images.get( currentImage );
 		
@@ -86,6 +94,9 @@ public class DetectPanel extends SubView {
 		}
 	}
 	
+	/**
+	 * Initializes this panel.
+	 */
 	public void init() {
 		controller = new DetectController( this, StitcherFacade.getInstance() );
 		images = StitcherFacade.getInstance().getRegisteredImages();
@@ -93,7 +104,7 @@ public class DetectPanel extends SubView {
 		btPreviousImage.setEnabled( false );
 		btNextImage.setEnabled( images.size() > 1 );
 		showImage();
-		// button stuff
+		// view previous image
 		btPreviousImage.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent evt ) {
 				btNextImage.setEnabled( images.size() > 1 );	
@@ -102,6 +113,7 @@ public class DetectPanel extends SubView {
 				showImage();
 			}
 		});
+		// view next image
 		btNextImage.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent evt ) {
 				btPreviousImage.setEnabled( images.size() > 1 );
@@ -110,6 +122,7 @@ public class DetectPanel extends SubView {
 				showImage();
 			}
 		});
+		// show ip parameter dialog
 		btSettingsIP.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent evt ) {
 				ParameterDialog dlg = new ParameterDialog( config );
@@ -119,6 +132,7 @@ public class DetectPanel extends SubView {
 				}
 			}
 		});
+		// find all interest points
 		btFindIP.addActionListener( new ActionListener() {
 			public void actionPerformed( ActionEvent evt ) {
 				BufferedImage img = images.get( currentImage );
@@ -129,6 +143,15 @@ public class DetectPanel extends SubView {
 		});
 	}
 	
+	@Override
+	public void reset() {
+		
+	}
+	
+	/**
+	 * Draws all detected interest points of the image in the image
+	 * @param img
+	 */
 	private void renderInterestPoints( BufferedImage img ) {
 		BufferedImage copy = Utility.duplicateImage( img );
 		Iterator<InterestPoint> iterator = interests.get( img ).iterator();
@@ -140,6 +163,11 @@ public class DetectPanel extends SubView {
 		lbImage.setIcon( new ImageIcon( Utility.resizeImage( copy ) ) );
 	}
 
+	/**
+	 * Draws an interest point into the image.
+	 * @param img
+	 * @param ip
+	 */
 	private void drawInterestPoint( BufferedImage img, InterestPoint ip ) {
 		Graphics2D render = img.createGraphics();
 		render.setColor( Color.RED );

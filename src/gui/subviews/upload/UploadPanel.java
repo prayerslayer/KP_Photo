@@ -137,5 +137,9 @@ public class UploadPanel extends SubView implements Observer {
 	public void init() {
 		//everything happens in constructors
 	}
+	
+	public void reset() {
+		
+	}
 
 }

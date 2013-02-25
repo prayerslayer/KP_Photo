@@ -15,7 +15,6 @@ public class DetectController extends SubController {
 
 	public DetectController(JPanel view, StitcherFacade stitchy) {
 		super(view, stitchy);
-		// TODO Auto-generated constructor stub
 	}
 
 	public List<InterestPoint> getInterestPoints(BufferedImage img) {

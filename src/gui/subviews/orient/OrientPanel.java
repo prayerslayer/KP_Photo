@@ -16,4 +16,8 @@ public class OrientPanel extends SubView {
 		
 	}
 
+	@Override
+	public void reset() {
+		
+	}
 }

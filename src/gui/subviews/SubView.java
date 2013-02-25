@@ -12,4 +12,5 @@ public abstract class SubView extends JPanel {
 	protected SubController controller;
 	
 	public abstract void init();
+	public abstract void reset();
 }

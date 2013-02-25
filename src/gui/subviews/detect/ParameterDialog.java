@@ -8,9 +8,16 @@ import javax.swing.JButton;
 
 import photo.FastHessianConfig;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/**
+ * Dialogue for interest point parameter.
+ * @author xnikp
+ *
+ */
 public class ParameterDialog extends JDialog {
 
 	private boolean ok = false;
@@ -23,7 +30,10 @@ public class ParameterDialog extends JDialog {
 	private JSlider sldNumberOctaves;
 	private FastHessianConfig conf;
 	
-	
+	/**
+	 * Creates a new dialogue
+	 * @param deflt default configuration, may be null
+	 */
 	public ParameterDialog(FastHessianConfig deflt ) {
 		setModal(true);
 		setTitle("Interest Point Parameter");
@@ -131,9 +141,9 @@ public class ParameterDialog extends JDialog {
 		getContentPane().add(sldNumberOctaves);
 		
 		JButton btCancel = new JButton("Verwerfen");
-		btCancel.addMouseListener(new MouseAdapter() {
+		btCancel.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				ok = false;
 				setVisible( false );
 			}
@@ -141,9 +151,9 @@ public class ParameterDialog extends JDialog {
 		getContentPane().add(btCancel);
 		
 		JButton btOK = new JButton("Bestätigen");
-		btOK.addMouseListener(new MouseAdapter() {
+		btOK.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				conf = createConfig();
 				ok = true;
 				setVisible( false );
@@ -152,7 +162,10 @@ public class ParameterDialog extends JDialog {
 		getContentPane().add(btOK);
 		
 	}
-	
+	/**
+	 * Creates a FastHessianConfig out of the various sliders.
+	 * @return a FastHessianConfig
+	 */
 	private FastHessianConfig createConfig() {
 		float threshold = sldThreshold.getValue();
 		int radius = sldRadius.getValue();
@@ -167,7 +180,10 @@ public class ParameterDialog extends JDialog {
 	public FastHessianConfig getConfig() {
 		return this.conf;
 	}
-	
+	/**
+	 * Indicates whether or not the dialogue was okayed or cancelled
+	 * @return true if okay
+	 */
 	public boolean isOK() {
 		return ok;
 	}

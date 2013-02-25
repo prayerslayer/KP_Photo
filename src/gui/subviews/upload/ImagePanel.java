@@ -14,6 +14,11 @@ import javax.swing.JPanel;
 
 import util.Utility;
 
+/**
+ * Panel to hold an image, a delete button and a label.
+ * @author xnikp
+ *
+ */
 public class ImagePanel extends JPanel {
 
 	private JButton btDelete;
@@ -21,6 +26,11 @@ public class ImagePanel extends JPanel {
 	private JLabel lbImage;
 	private BufferedImage img;
 	
+	/**
+	 * Creates a new ImagePanel
+	 * @param description the description of the image
+	 * @param img the image
+	 */
 	public ImagePanel( String description, final BufferedImage img ) {
 		super();
 		this.img = img;

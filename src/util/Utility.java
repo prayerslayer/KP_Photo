@@ -9,10 +9,22 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 
+/**
+ * Class with helper functions
+ * @author xnikp
+ *
+ */
 public class Utility {
-
+	/**
+	 * Maximum length of an image side
+	 */
 	public static int IMAGE_SIZE = 600;
 	
+	/**
+	 * Resizes an image with BufferedImage.getScaledInstance
+	 * @param img the image to resize
+	 * @return a resized image. The longest side is now @{IMAGE_SIZE} px long
+	 */
 	public static Image resizeImage( BufferedImage img ) {
 		Image small;
 		float ratio = ( float ) img.getWidth() / img.getHeight();
@@ -29,6 +41,11 @@ public class Utility {
 		return small;
 	}
 	
+	/**
+	 * Clones an image.
+	 * @param bi image to duplicate
+	 * @return copy of bi
+	 */
 	public static BufferedImage duplicateImage( BufferedImage bi ) {
 		ColorModel cm = bi.getColorModel();
 		 boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
@@ -36,6 +53,12 @@ public class Utility {
 		 return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
 	}
 	
+	/**
+	 * Scales an image without BufferedImage.getScaledInstance
+	 * @param img
+	 * @param background
+	 * @return
+	 */
 	public static BufferedImage scaleImage(BufferedImage img, Color background) {
 	    int imgWidth = img.getWidth();
 	    int imgHeight = img.getHeight();
