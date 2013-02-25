@@ -32,6 +32,7 @@ import javax.swing.SwingUtilities;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.AbstractAction;
@@ -192,18 +193,18 @@ public class BasicWindow extends JFrame {
 		pnLogNav.setLayout(new BorderLayout(0, 0));
 		
 		btNext = new JButton("N\u00E4chster Schritt");
-		btNext.addMouseListener(new MouseAdapter() {
+		btNext.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				next();
 			}
 		});
 		pnLogNav.add(btNext, BorderLayout.EAST);
 		
 		btPrevious = new JButton("Zur\u00FCck");
-		btPrevious.addMouseListener(new MouseAdapter() {
+		btPrevious.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				previous();
 			}
 		});
