@@ -2,6 +2,7 @@ package gui.subviews.detect;
 
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.swing.JPanel;
 
@@ -17,12 +18,12 @@ public class DetectController extends SubController {
 		// TODO Auto-generated constructor stub
 	}
 
-	public Iterator<InterestPoint> getInterestPoints(BufferedImage img) {
-		return stitcher.detectInterestPoints( img ).iterator();
+	public List<InterestPoint> getInterestPoints(BufferedImage img) {
+		return stitcher.detectInterestPoints( img );
 	}
 	
-	public Iterator<InterestPoint> getInterestPoints( BufferedImage img, FastHessianConfig config ) {
-		return stitcher.detectInterestPoints( img, config == null ? new FastHessianConfig() : config ).iterator();
+	public List<InterestPoint> getInterestPoints( BufferedImage img, FastHessianConfig config ) {
+		return stitcher.detectInterestPoints( img, config == null ? new FastHessianConfig() : config );
 	}
 
 }

@@ -20,11 +20,14 @@ import photo.StitcherFacade;
 import util.Utility;
 
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,9 +41,9 @@ public class DetectPanel extends SubView {
 	
 	private List<BufferedImage> images;
 	private FastHessianConfig config;
-	private Map<BufferedImage, Iterator<InterestPoint>> interests;
+	private Map<BufferedImage, List<InterestPoint>> interests;
 	private int currentImage = 0;
-	private JLabel lbImage;
+	private AddInterestPointLabel lbImage;
 	private JButton btPreviousImage;
 	private JButton btNextImage;
 	private JButton btFindIP;
@@ -49,7 +52,7 @@ public class DetectPanel extends SubView {
 	public DetectPanel() {
 		setLayout(new BorderLayout(0, 0));
 		
-		lbImage = new JLabel("");
+		lbImage = new AddInterestPointLabel();
 		lbImage.setHorizontalAlignment( JLabel.CENTER );
 		lbImage.setSize(600, 600);
 		add(lbImage, BorderLayout.CENTER);
@@ -71,31 +74,44 @@ public class DetectPanel extends SubView {
 		panel.add(btFindIP);
 	}
 	
+	private void showImage() {
+		BufferedImage img = images.get( currentImage );
+		
+		if ( interests.get( img ) != null ) {
+			renderInterestPoints(img);
+		} else {
+			BufferedImage copy = Utility.duplicateImage( img );
+			lbImage.setImage( copy );
+			lbImage.setIcon( new ImageIcon( Utility.resizeImage( copy ) ) );
+		}
+	}
+	
 	public void init() {
 		controller = new DetectController( this, StitcherFacade.getInstance() );
 		images = StitcherFacade.getInstance().getRegisteredImages();
-		interests = new HashMap<BufferedImage, Iterator<InterestPoint>>();
-		BufferedImage img = images.get( currentImage );
-		
-		lbImage.setIcon( new ImageIcon( Utility.resizeImage( img ) ) );
+		interests = new HashMap<BufferedImage, List<InterestPoint>>();
 		btPreviousImage.setEnabled( false );
 		btNextImage.setEnabled( images.size() > 1 );
-		
+		showImage();
 		// button stuff
-		btPreviousImage.addMouseListener( new MouseAdapter() {
-			public void mouseClicked( MouseEvent evt ) {
-				//TODO compute IPs if necessary
-				setEnabled( currentImage - 1 < 0 );
+		btPreviousImage.addActionListener( new ActionListener() {
+			public void actionPerformed( ActionEvent evt ) {
+				btNextImage.setEnabled( images.size() > 1 );	
+				currentImage = currentImage - 1;
+				btPreviousImage.setEnabled( currentImage - 1 >= 0 );
+				showImage();
 			}
 		});
-		btNextImage.addMouseListener( new MouseAdapter() {
-			public void mouseClicked( MouseEvent evt ) {
-				//TODO compute IPs if necessary
-				setEnabled( currentImage + 1 >= images.size());
+		btNextImage.addActionListener( new ActionListener() {
+			public void actionPerformed( ActionEvent evt ) {
+				btPreviousImage.setEnabled( images.size() > 1 );
+				currentImage = currentImage + 1;
+				btNextImage.setEnabled( currentImage + 1 < images.size());
+				showImage();
 			}
 		});
-		btSettingsIP.addMouseListener( new MouseAdapter() {
-			public void mouseClicked( MouseEvent evt ) {
+		btSettingsIP.addActionListener( new ActionListener() {
+			public void actionPerformed( ActionEvent evt ) {
 				ParameterDialog dlg = new ParameterDialog( config );
 				dlg.setVisible( true );
 				if ( dlg.isOK() ) {
@@ -103,20 +119,25 @@ public class DetectPanel extends SubView {
 				}
 			}
 		});
-		btFindIP.addMouseListener( new MouseAdapter() {
-			public void mouseClicked( MouseEvent evt ) {
+		btFindIP.addActionListener( new ActionListener() {
+			public void actionPerformed( ActionEvent evt ) {
 				BufferedImage img = images.get( currentImage );
-				BufferedImage copy = Utility.duplicateImage( img );
 				interests.put( img, ((DetectController)controller).getInterestPoints( img, config ) ); 
-				Iterator<InterestPoint> iterator = interests.get( img );
-				while( iterator.hasNext() ) {
-					InterestPoint ip = iterator.next();
-					drawInterestPoint( copy, ip );
-				}
-				lbImage.setIcon( new ImageIcon( Utility.resizeImage( copy ) ) );
+				renderInterestPoints( img );
 				
 			}
 		});
+	}
+	
+	private void renderInterestPoints( BufferedImage img ) {
+		BufferedImage copy = Utility.duplicateImage( img );
+		Iterator<InterestPoint> iterator = interests.get( img ).iterator();
+		while( iterator.hasNext() ) {
+			InterestPoint ip = iterator.next();
+			drawInterestPoint( copy, ip );
+		}
+		lbImage.setImage( copy );
+		lbImage.setIcon( new ImageIcon( Utility.resizeImage( copy ) ) );
 	}
 
 	private void drawInterestPoint( BufferedImage img, InterestPoint ip ) {
