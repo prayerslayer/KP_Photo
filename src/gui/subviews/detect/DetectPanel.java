@@ -106,13 +106,14 @@ public class DetectPanel extends SubView {
 		btFindIP.addMouseListener( new MouseAdapter() {
 			public void mouseClicked( MouseEvent evt ) {
 				BufferedImage img = images.get( currentImage );
+				BufferedImage copy = Utility.duplicateImage( img );
 				interests.put( img, ((DetectController)controller).getInterestPoints( img, config ) ); 
 				Iterator<InterestPoint> iterator = interests.get( img );
 				while( iterator.hasNext() ) {
 					InterestPoint ip = iterator.next();
-					drawInterestPoint( img, ip );
+					drawInterestPoint( copy, ip );
 				}
-				lbImage.setIcon( new ImageIcon( Utility.resizeImage( img ) ) );
+				lbImage.setIcon( new ImageIcon( Utility.resizeImage( copy ) ) );
 				
 			}
 		});

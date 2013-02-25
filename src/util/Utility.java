@@ -1,10 +1,13 @@
 package util;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 
 public class Utility {
 
@@ -24,6 +27,13 @@ public class Utility {
 			small = img.getScaledInstance( IMAGE_SIZE, IMAGE_SIZE, 0 );
 		}
 		return small;
+	}
+	
+	public static BufferedImage duplicateImage( BufferedImage bi ) {
+		ColorModel cm = bi.getColorModel();
+		 boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		 WritableRaster raster = bi.copyData(null);
+		 return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
 	}
 	
 	public static BufferedImage scaleImage(BufferedImage img, Color background) {
