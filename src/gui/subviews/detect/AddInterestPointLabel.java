@@ -32,7 +32,7 @@ public class AddInterestPointLabel extends JLabel {
 	}
 	
 	public void drawCircle( int x, int y, int r ) {
-		ips.add( new InterestPoint( x, y, r ) );
+		//ips.add( new InterestPoint( x, y, r ) );
 		Graphics2D graph = image.createGraphics();
 		graph.setColor( Color.BLUE );
 		graph.setStroke( new BasicStroke( 3 ) );

@@ -172,7 +172,12 @@ public class DetectPanel extends SubView {
 		Graphics2D render = img.createGraphics();
 		render.setColor( Color.RED );
 		render.setStroke( new BasicStroke( 3 ) );
-		render.drawOval( (int) ip.getX(), (int) ip.getY(), (int) ip.getRadius(), (int) ip.getRadius() );
+		
+		int x = ( int )Math.round( ip.getX() );
+		int y = ( int )Math.round( ip.getY() );
+		int r = ( int )Math.round( ip.getRadius() );
+		
+		render.drawOval( x-r/2, y-r/2, r, r );
 		render.dispose();
 	}
 }

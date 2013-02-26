@@ -19,21 +19,28 @@ public class Utility {
 	 * Maximum length of an image side
 	 */
 	public static int IMAGE_SIZE = 600;
-	
+	/**
+	 * Space between images if they are combined to one
+	 */
+	public static int GUTTER = 20;
 	/**
 	 * Resizes an image with BufferedImage.getScaledInstance
 	 * @param img the image to resize
 	 * @return a resized image. The longest side is now @{IMAGE_SIZE} px long
 	 */
 	public static Image resizeImage( BufferedImage img ) {
+		return resizeImage( img, 1f );
+	}
+	
+	public static Image resizeImage( BufferedImage img, double factor ) {
 		Image small;
 		float ratio = ( float ) img.getWidth() / img.getHeight();
 		if ( ratio > 1 ) {
 			// landscape
-			small = img.getScaledInstance( IMAGE_SIZE, Math.round( IMAGE_SIZE/ratio) , Image.SCALE_FAST );
+			small = img.getScaledInstance( (int)Math.round( factor*IMAGE_SIZE ), (int)Math.round( IMAGE_SIZE*factor/ratio) , Image.SCALE_FAST );
 		} else if ( ratio < 1 ){
 			// portrait
-			small = img.getScaledInstance( Math.round( IMAGE_SIZE/ratio ), IMAGE_SIZE, Image.SCALE_FAST );
+			small = img.getScaledInstance( (int)Math.round( IMAGE_SIZE*factor/ratio ), (int)Math.round( factor*IMAGE_SIZE ), Image.SCALE_FAST );
 		} else  {
 			// square
 			small = img.getScaledInstance( IMAGE_SIZE, IMAGE_SIZE, 0 );
@@ -48,19 +55,13 @@ public class Utility {
 	 */
 	public static BufferedImage duplicateImage( BufferedImage bi ) {
 		ColorModel cm = bi.getColorModel();
-		 boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		 WritableRaster raster = bi.copyData(null);
-		 return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = bi.copyData(null);
+		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
 	}
 	
-	/**
-	 * Scales an image without BufferedImage.getScaledInstance
-	 * @param img
-	 * @param background
-	 * @return
-	 */
-	public static BufferedImage scaleImage(BufferedImage img, Color background) {
-	    int imgWidth = img.getWidth();
+	public static BufferedImage scaleImage( BufferedImage img, int longestSide ) {
+		int imgWidth = img.getWidth();
 	    int imgHeight = img.getHeight();
 	    int width = 0;
 	    int height = 0;
@@ -68,14 +69,14 @@ public class Utility {
 	    float ratio = (float) imgWidth / imgHeight;
 	    if ( ratio > 1 ) {
 	    	//landscape
-	    	width = IMAGE_SIZE;
-	    	height = Math.round( IMAGE_SIZE/ratio );
+	    	width = longestSide;
+	    	height = Math.round( longestSide/ratio );
 	    } else if ( ratio < 1 ) {
 	    	//portrait
-	    	height = IMAGE_SIZE;
-	    	width = Math.round( IMAGE_SIZE/ratio );
+	    	height = longestSide;
+	    	width = Math.round( longestSide/ratio );
 	    } else {
-	    	width = IMAGE_SIZE;
+	    	width = longestSide;
 	    	height = width;
 	    }
 	    	
@@ -85,18 +86,58 @@ public class Utility {
 	    } else {
 	        height = imgHeight*width/imgWidth;
 	    }
-	    BufferedImage newImage = new BufferedImage(width, height,
-	            BufferedImage.TYPE_INT_RGB);
+	    BufferedImage newImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 	    Graphics2D g = newImage.createGraphics();
 	    try {
 	        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
 	                RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-	        g.setBackground(background);
+	        g.setBackground(Color.BLACK);
 	        g.clearRect(0, 0, width, height);
 	        g.drawImage(img, 0, 0, width, height, null);
 	    } finally {
 	        g.dispose();
 	    }
 	    return newImage;
+	}
+	
+	/**
+	 * Scales an image without BufferedImage.getScaledInstance
+	 * @param img
+	 * @param background
+	 * @return
+	 */
+	public static BufferedImage scaleImage(BufferedImage img) {
+		return scaleImage( img, IMAGE_SIZE );
+	}
+
+	/**
+	 * Draws two image in one.
+	 * @param left left image
+	 * @param right right image
+	 * @return image containing left and right with some space between
+	 */
+	public static BufferedImage combineImages(BufferedImage left, BufferedImage right) {
+		int wleft = left.getWidth();
+		int wright = right.getWidth();
+		int hleft = left.getHeight();
+		int hright = right.getHeight();
+		int totalWidth = wleft + GUTTER + wright;
+		int totalHeight = Math.max( hleft, hright );
+		
+		BufferedImage combined = new BufferedImage( totalWidth, totalHeight, BufferedImage.TYPE_INT_RGB );
+		Graphics2D g = combined.createGraphics();
+		try {
+			g.setRenderingHint( RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC );
+			g.setBackground( Color.black );
+			// draw left
+			g.clearRect(0, 0, wleft, hleft );
+			g.drawImage( left, 0, 0, wleft, hleft, null );
+			// draw right
+			g.clearRect( wleft + GUTTER, 0, wright, hright );
+			g.drawImage( right, wleft + GUTTER, 0, wright, hright, null );
+		} finally {
+			g.dispose();
+		}
+		return combined;
 	}
 }

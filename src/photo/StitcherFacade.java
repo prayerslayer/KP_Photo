@@ -2,7 +2,11 @@ package photo;
 
 import georegression.struct.point.Point2D_F64;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -10,11 +14,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import util.Utility;
+
+import boofcv.abst.feature.associate.AssociateDescription;
+import boofcv.abst.feature.associate.ScoreAssociation;
+import boofcv.abst.feature.detdesc.DetectDescribePoint;
+import boofcv.abst.feature.detect.interest.ConfigFastHessian;
 import boofcv.abst.feature.detect.interest.InterestPointDetector;
+import boofcv.alg.feature.UtilFeature;
 import boofcv.alg.misc.GPixelMath;
 import boofcv.core.image.ConvertBufferedImage;
+import boofcv.factory.feature.associate.FactoryAssociation;
+import boofcv.factory.feature.detdesc.FactoryDetectDescribe;
 import boofcv.factory.feature.detect.interest.FactoryInterestPoint;
 import boofcv.struct.BoofDefaults;
+import boofcv.struct.FastQueue;
+import boofcv.struct.feature.AssociatedIndex;
+import boofcv.struct.feature.SurfFeature;
+import boofcv.struct.feature.TupleDesc;
 import boofcv.struct.image.ImageFloat32;
 import boofcv.struct.image.ImageUInt8;
 import boofcv.struct.image.MultiSpectral;
@@ -28,6 +45,9 @@ public class StitcherFacade {
 	private static StitcherFacade instance;
 	private Map< BufferedImage, MultiSpectral< ImageUInt8 > > images;
 	private Map< BufferedImage, List<InterestPoint> > interestPoints;
+	private DetectDescribePoint detectDescribe;
+	private ScoreAssociation<SurfFeature> scorer;
+	private AssociateDescription<SurfFeature> association;
 	
 	private StitcherFacade() {
 		images = new HashMap< BufferedImage, MultiSpectral< ImageUInt8 > >();
@@ -90,6 +110,81 @@ public class StitcherFacade {
 		return list;
 	}
 	
+	public List<InterestPoint> getInterestPointsFor( BufferedImage img ) {
+		if ( this.interestPoints.get( img ) == null )
+			detectInterestPoints( img );
+		return this.interestPoints.get( img );
+	}
+	
+	/**
+	 * Associates interest points in the two images.
+	 * @param img1
+	 * @param img2
+	 * @return List of associations
+	 */
+	public List<PointAssociation> associateInterestPoints( BufferedImage img1, BufferedImage img2 ) {
+		// detect interest points if not done already
+		if ( interestPoints.get( img1 ) == null ) {
+			detectInterestPoints( img1 );
+		}
+		if ( interestPoints.get( img2 ) == null ) {
+			detectInterestPoints( img2 );
+		}
+		// set up some collections
+		List<InterestPoint> ip1 = interestPoints.get( img1 );
+		List<InterestPoint> ip2 = interestPoints.get( img2 );
+		FastQueue<SurfFeature> desc1 = UtilFeature.createQueue( detectDescribe, 100 );
+		FastQueue<SurfFeature> desc2 = UtilFeature.createQueue( detectDescribe, 100 );
+		List<Point2D_F64> points1 = new ArrayList<Point2D_F64>();
+		List<Point2D_F64> points2 = new ArrayList<Point2D_F64>();
+		// define score and association algorithm
+		scorer = FactoryAssociation.scoreEuclidean( SurfFeature.class, true );
+		association = FactoryAssociation.greedy(scorer, Double.MAX_VALUE, true);
+		
+		// collect points and descriptions for association
+		for ( InterestPoint ip : ip1 ) {
+			points1.add( new Point2D_F64( ip.getX(), ip.getY() ) );
+			desc1.grow().setTo( ip.getDescription() );
+		}
+		for ( InterestPoint ip : ip2 ) {
+			points2.add( new Point2D_F64( ip.getX(), ip.getY() ) );
+			desc2.grow().setTo( ip.getDescription() );
+		}
+		
+		// do the actual association
+		association.setSource( desc1 );
+		association.setDestination( desc2 );
+		association.associate();
+		
+		// write result into library independent representation
+		List<PointAssociation> result = new ArrayList<PointAssociation>();
+		List<AssociatedIndex> list = new ArrayList<AssociatedIndex>();
+		association.getMatches().copyIntoList( list );
+		for ( AssociatedIndex idx : list ) {
+			result.add( new PointAssociation( idx.src, idx.dst, idx.fitScore ) );
+		}
+		return result;
+	}
+	
+	public BufferedImage renderIP( BufferedImage img ) {
+		BufferedImage copy = Utility.duplicateImage( img );
+		if ( interestPoints.get( img ) == null ) {
+			detectInterestPoints( img );
+		}
+		Graphics2D graphics = copy.createGraphics();
+		graphics.setStroke( new BasicStroke( 3 ) );
+		graphics.setColor( Color.RED );
+		for ( InterestPoint ip : interestPoints.get( img ) ) {
+			int x = ( int )Math.round( ip.getX() );
+			int y = ( int )Math.round( ip.getY() );
+			int r = ( int )Math.round( ip.getRadius() );
+			
+			graphics.drawOval( x-r/2, y-r/2, r, r );
+		}
+		graphics.dispose();
+		return copy;
+	}
+	
 	public List<InterestPoint> detectInterestPoints( BufferedImage img, FastHessianConfig config ) {
 		if ( img == null )
 		 	return null;
@@ -104,19 +199,25 @@ public class StitcherFacade {
 		// compute
 		List<InterestPoint> ips = new LinkedList<InterestPoint>();
 		// 10f, 2, 100, 2, 9, 3, 4
-		InterestPointDetector<ImageUInt8> detector = FactoryInterestPoint.fastHessian(
-				config.getDetectThreshold(),
-				config.getExtractRadius(),
-				config.getMaxFeaturesPerScale(),
-				config.getInitialSampleSize(),
-				config.getInitialSize(),
-				config.getNumberScalesPerOctave(),
-				config.getNumberOfOctaves() );
-		detector.detect( gray );
-		System.out.println( detector.getNumberOfFeatures() + " features detected" );
-		for( int i = 0; i < detector.getNumberOfFeatures(); i++ ) {
-			Point2D_F64 point = detector.getLocation( i );
-			InterestPoint ip = new InterestPoint( point.x, point.y, detector.getScale( i )*BoofDefaults.SCALE_SPACE_CANONICAL_RADIUS );
+		detectDescribe = FactoryDetectDescribe.surfStable(
+				new ConfigFastHessian( 
+					config.getDetectThreshold(),
+					config.getExtractRadius(),
+					config.getMaxFeaturesPerScale(),
+					config.getInitialSampleSize(),
+					config.getInitialSize(),
+					config.getNumberScalesPerOctave(),
+					config.getNumberOfOctaves()
+				),
+				null,
+				null,
+				ImageUInt8.class);
+		detectDescribe.detect( gray );
+		descriptorType = detectDescribe.getDescriptionType();
+		System.out.println( detectDescribe.getNumberOfFeatures() + " features detected" );
+		for( int i = 0; i < detectDescribe.getNumberOfFeatures(); i++ ) {
+			Point2D_F64 point = detectDescribe.getLocation( i );
+			InterestPoint ip = new InterestPoint( point.x, point.y, detectDescribe.getScale( i )*BoofDefaults.SCALE_SPACE_CANONICAL_RADIUS, (SurfFeature)detectDescribe.getDescription( i ) );
 			ips.add( ip );
 		}
 		// add to computed values
@@ -126,5 +227,22 @@ public class StitcherFacade {
 
 	public List<InterestPoint> detectInterestPoints(BufferedImage img) {
 		return this.detectInterestPoints( img, new FastHessianConfig() );
+	}
+
+	public void renderIP(BufferedImage img, BufferedImage copy ) {
+		if ( interestPoints.get( img ) == null ) {
+			detectInterestPoints( img );
+		}
+		Graphics2D graphics = copy.createGraphics();
+		graphics.setStroke( new BasicStroke( 3 ) );
+		graphics.setColor( Color.RED );
+		for ( InterestPoint ip : interestPoints.get( img ) ) {
+			int x = ( int )Math.round( ip.getX() );
+			int y = ( int )Math.round( ip.getY() );
+			int r = ( int )Math.round( ip.getRadius() );
+			
+			graphics.drawOval( x-r/2, y-r/2, r, r );
+		}
+		graphics.dispose();
 	}
 }
