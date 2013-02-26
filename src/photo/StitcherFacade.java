@@ -1,5 +1,6 @@
 package photo;
 
+import georegression.struct.homo.Homography2D_F64;
 import georegression.struct.point.Point2D_F64;
 
 import java.awt.BasicStroke;
@@ -14,6 +15,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.ddogleg.fitting.modelset.ModelMatcher;
+import org.ddogleg.fitting.modelset.ransac.Ransac;
+
 import util.Utility;
 
 import boofcv.abst.feature.associate.AssociateDescription;
@@ -23,6 +27,8 @@ import boofcv.abst.feature.detect.interest.ConfigFastHessian;
 import boofcv.abst.feature.detect.interest.InterestPointDetector;
 import boofcv.alg.feature.UtilFeature;
 import boofcv.alg.misc.GPixelMath;
+import boofcv.alg.sfm.robust.DistanceHomographySq;
+import boofcv.alg.sfm.robust.GenerateHomographyLinear;
 import boofcv.core.image.ConvertBufferedImage;
 import boofcv.factory.feature.associate.FactoryAssociation;
 import boofcv.factory.feature.detdesc.FactoryDetectDescribe;
@@ -32,6 +38,7 @@ import boofcv.struct.FastQueue;
 import boofcv.struct.feature.AssociatedIndex;
 import boofcv.struct.feature.SurfFeature;
 import boofcv.struct.feature.TupleDesc;
+import boofcv.struct.geo.AssociatedPair;
 import boofcv.struct.image.ImageFloat32;
 import boofcv.struct.image.ImageUInt8;
 import boofcv.struct.image.MultiSpectral;
@@ -110,6 +117,41 @@ public class StitcherFacade {
 		return list;
 	}
 	
+	/**
+	 * Orients two images and returns the homography model.
+	 * @param img1 first image
+	 * @param img2 second image
+	 * @return relative orientation
+	 * @throws OrientationFailedException if images can not be oriented
+	 */
+	public Homography2D_F64 orientImages( BufferedImage img1, BufferedImage img2 ) throws OrientationFailedException {
+		GenerateHomographyLinear modelFitter = new GenerateHomographyLinear( true );
+		DistanceHomographySq distance = new DistanceHomographySq();
+		ModelMatcher<Homography2D_F64, AssociatedPair> modelMatcher = new Ransac<Homography2D_F64, AssociatedPair>(100, modelFitter, distance, 60, 9);
+		
+		// associate and generate pairs for matcher
+		List<AssociatedPair> pairs = new ArrayList<AssociatedPair>();
+		List<PointAssociation> associations = associateInterestPoints(img1, img2);
+		InterestPoint ip1, ip2;
+		Point2D_F64 p1, p2;
+		for ( PointAssociation pa : associations ) {
+			ip1 = interestPoints.get( img1 ).get( pa.getSource() );
+			ip2 = interestPoints.get( img2 ).get( pa.getDestination() );
+			p1 = new Point2D_F64( ip1.getX(), ip1.getY() );
+			p2 = new Point2D_F64( ip2.getX(), ip2.getY() );
+			pairs.add( new AssociatedPair( p1, p2, false ) );
+		}
+		
+		if ( !modelMatcher.process( pairs ) )
+			throw new OrientationFailedException();
+		return modelMatcher.getModel().copy();
+	}
+	
+	/**
+	 * Returns interest points for image
+	 * @param img
+	 * @return
+	 */
 	public List<InterestPoint> getInterestPointsFor( BufferedImage img ) {
 		if ( this.interestPoints.get( img ) == null )
 			detectInterestPoints( img );
@@ -166,6 +208,11 @@ public class StitcherFacade {
 		return result;
 	}
 	
+	/**
+	 * Renders interest points in image.
+	 * @param img
+	 * @return
+	 */
 	public BufferedImage renderIP( BufferedImage img ) {
 		BufferedImage copy = Utility.duplicateImage( img );
 		if ( interestPoints.get( img ) == null ) {
@@ -185,6 +232,12 @@ public class StitcherFacade {
 		return copy;
 	}
 	
+	/**
+	 * Detects interest points in image.
+	 * @param img
+	 * @param config
+	 * @return
+	 */
 	public List<InterestPoint> detectInterestPoints( BufferedImage img, FastHessianConfig config ) {
 		if ( img == null )
 		 	return null;
@@ -213,7 +266,6 @@ public class StitcherFacade {
 				null,
 				ImageUInt8.class);
 		detectDescribe.detect( gray );
-		descriptorType = detectDescribe.getDescriptionType();
 		System.out.println( detectDescribe.getNumberOfFeatures() + " features detected" );
 		for( int i = 0; i < detectDescribe.getNumberOfFeatures(); i++ ) {
 			Point2D_F64 point = detectDescribe.getLocation( i );
@@ -225,10 +277,20 @@ public class StitcherFacade {
 		return ips;
 	}
 
+	/**
+	 * Detects interest points in image with default parameters
+	 * @param img
+	 * @return
+	 */
 	public List<InterestPoint> detectInterestPoints(BufferedImage img) {
 		return this.detectInterestPoints( img, new FastHessianConfig() );
 	}
 
+	/**
+	 * Renders interest points of img in copy.
+	 * @param img
+	 * @param copy
+	 */
 	public void renderIP(BufferedImage img, BufferedImage copy ) {
 		if ( interestPoints.get( img ) == null ) {
 			detectInterestPoints( img );
