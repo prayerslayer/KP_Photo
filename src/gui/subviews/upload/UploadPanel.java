@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.filechooser.FileFilter;
 
 import photo.StitcherFacade;
+import util.Utility;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -85,6 +86,9 @@ public class UploadPanel extends SubView implements Observer {
 						try {
 							//read image
 							BufferedImage img = ImageIO.read( file );
+							//resize if necessary
+							if ( img.getWidth() > 1000 || img.getHeight() > 1000 )
+								img = Utility.scaleImage(img, 1000 );
 							//register image at controller for further calculations
 							((UploadController) controller).registerImage( img );
 							
