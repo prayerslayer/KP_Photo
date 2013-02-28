@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.swing.JPanel;
 
+import photo.Homography;
 import photo.OrientationFailedException;
 import photo.StitcherFacade;
 import georegression.struct.homo.Homography2D_F64;
@@ -20,8 +21,20 @@ public class OrientController extends SubController {
 		return stitcher.getRegisteredImages();
 	}
 
-	public Homography2D_F64 orientImages(BufferedImage img1, BufferedImage img2) throws OrientationFailedException {
+	public Homography orientImages(BufferedImage img1, BufferedImage img2) throws OrientationFailedException {
 		return stitcher.orientImages(img1, img2);
+	}
+
+	public List<Homography> orientImages() throws OrientationFailedException {
+		return stitcher.orientImages();		
+	}
+	
+	public BufferedImage stitchTogether ( int width, int height, boolean preview ) throws OrientationFailedException {
+		return stitcher.stitchTogether(width, height, preview);
+	}
+
+	public BufferedImage stitch( Homography h ) {
+		return stitcher.stitch( h, true );
 	}
 
 }

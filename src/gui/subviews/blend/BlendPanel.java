@@ -12,7 +12,6 @@ public class BlendPanel extends SubView {
 
 	@Override
 	public void init() {
-		// TODO Auto-generated method stub
 		
 	}
 	

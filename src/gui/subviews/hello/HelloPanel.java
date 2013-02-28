@@ -21,7 +21,7 @@ public class HelloPanel extends SubView {
 
 	@Override
 	public void init() {
-		// TODO Auto-generated method stub
+		
 		
 	}
 	@Override

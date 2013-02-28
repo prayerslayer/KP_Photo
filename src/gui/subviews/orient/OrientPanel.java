@@ -1,11 +1,16 @@
 package gui.subviews.orient;
 
 import gui.subviews.SubView;
+
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
 
+import photo.Homography;
 import photo.OrientationFailedException;
 import photo.StitcherFacade;
+import util.Utility;
 
 import boofcv.gui.image.HomographyStitchPanel;
 
@@ -15,23 +20,28 @@ import java.awt.image.BufferedImage;
 
 public class OrientPanel extends SubView {
 	
-	private HomographyStitchPanel panel;
+	private JLabel lbImage;
+	private List<Homography> homos;
 	
 	public OrientPanel() {
 		setLayout(new BorderLayout(0, 0));
 		
-		panel = new HomographyStitchPanel( .5f, 800, 800 );
-		add( panel );
+		//JScrollPane scroller = new JScrollPane();
+		//add( scroller, BorderLayout.CENTER );
+		
+		lbImage = new JLabel();
+		//scroller.add( lbImage );
+		add( lbImage, BorderLayout.CENTER );
 	}
 
 	@Override
 	public void init() {
 		controller = new OrientController( this, StitcherFacade.getInstance());
-		List<BufferedImage> images = ((OrientController)controller).getRegisteredImages();
-		BufferedImage img1 = images.get( 0 );
-		BufferedImage img2 = images.get( 1 );
+		
+		BufferedImage img;
 		try {
-			panel.configure( img1, img2, ((OrientController)controller).orientImages( img1, img2 ) );
+			img = ((OrientController)controller).stitchTogether( getWidth(), getHeight(), true );
+			lbImage.setIcon( new ImageIcon( img ) );
 		} catch (OrientationFailedException oex ) {
 			JOptionPane.showMessageDialog(this, "Orientierung fehlgeschlagen!", "Fehler", JOptionPane.ERROR_MESSAGE );
 			oex.printStackTrace();

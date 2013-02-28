@@ -8,6 +8,13 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import boofcv.core.image.ConvertBufferedImage;
+import boofcv.struct.image.ImageBase;
 
 /**
  * Class with helper functions
@@ -139,5 +146,23 @@ public class Utility {
 			g.dispose();
 		}
 		return combined;
+	}
+
+	public static void saveImage(BufferedImage output) {
+		try {
+			File file = new File( "temp" + File.separator + output.hashCode()+".png" );
+			if ( file.exists() ) {
+				file.delete();
+			}
+			ImageIO.write(output, "png", file );
+		} catch( IOException e ) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void saveImage( ImageBase image ) {
+		BufferedImage output = new BufferedImage( image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB );
+		ConvertBufferedImage.convertTo( image, output );
+		saveImage( output );
 	}
 }
