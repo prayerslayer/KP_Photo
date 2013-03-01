@@ -10,6 +10,9 @@ import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
 import javax.imageio.ImageIO;
 
@@ -147,12 +150,19 @@ public class Utility {
 		}
 		return combined;
 	}
+	
+	public static void saveImage( BufferedImage output ) {
+		saveImage( output, null );
+	}
 
-	public static void saveImage(BufferedImage output) {
+	public static void saveImage(BufferedImage output, String filename ) {
+		if ( filename == null) {
+			filename = output.hashCode() + "";
+		}
 		try {
-			File file = new File( "temp" + File.separator + output.hashCode()+".png" );
+			File file = new File( "temp" + File.separator + filename +".png" );
 			if ( file.exists() ) {
-				file.delete();
+				file = new File( "temp" + File.separator + filename + "_" + new GregorianCalendar().getTimeInMillis() + ".png" );
 			}
 			ImageIO.write(output, "png", file );
 		} catch( IOException e ) {
@@ -164,5 +174,11 @@ public class Utility {
 		BufferedImage output = new BufferedImage( image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB );
 		ConvertBufferedImage.convertTo( image, output );
 		saveImage( output );
+	}
+	
+	public static void saveImage( ImageBase image, String filename ) {
+		BufferedImage output = new BufferedImage( image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB );
+		ConvertBufferedImage.convertTo( image, output );
+		saveImage( output, filename );
 	}
 }

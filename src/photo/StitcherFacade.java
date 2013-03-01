@@ -1,6 +1,8 @@
 package photo;
 
 import georegression.struct.homo.Homography2D_F64;
+import georegression.struct.line.LineSegment2D_F32;
+import georegression.struct.point.Point2D_F32;
 import georegression.struct.point.Point2D_F64;
 import georegression.struct.point.Point2D_I32;
 import georegression.transform.homo.HomographyPointOps_F64;
@@ -24,6 +26,7 @@ import javax.imageio.ImageIO;
 import org.ddogleg.fitting.modelset.ModelMatcher;
 import org.ddogleg.fitting.modelset.ransac.Ransac;
 
+import util.RunningStats;
 import util.Utility;
 
 import boofcv.abst.feature.associate.AssociateDescription;
@@ -31,19 +34,25 @@ import boofcv.abst.feature.associate.ScoreAssociation;
 import boofcv.abst.feature.detdesc.DetectDescribePoint;
 import boofcv.abst.feature.detect.interest.ConfigFastHessian;
 import boofcv.abst.feature.detect.interest.InterestPointDetector;
+import boofcv.abst.feature.detect.line.DetectLineSegmentsGridRansac;
 import boofcv.alg.distort.ImageDistort;
 import boofcv.alg.distort.PixelTransformHomography_F32;
 import boofcv.alg.distort.impl.DistortSupport;
 import boofcv.alg.feature.UtilFeature;
+import boofcv.alg.feature.detect.grid.IntensityHistogram;
+import boofcv.alg.filter.binary.ThresholdImageOps;
 import boofcv.alg.interpolate.InterpolatePixel;
 import boofcv.alg.interpolate.impl.ImplBilinearPixel_F32;
 import boofcv.alg.misc.GPixelMath;
+import boofcv.alg.misc.ImageStatistics;
 import boofcv.alg.sfm.robust.DistanceHomographySq;
 import boofcv.alg.sfm.robust.GenerateHomographyLinear;
 import boofcv.core.image.ConvertBufferedImage;
 import boofcv.factory.feature.associate.FactoryAssociation;
 import boofcv.factory.feature.detdesc.FactoryDetectDescribe;
 import boofcv.factory.feature.detect.interest.FactoryInterestPoint;
+import boofcv.factory.feature.detect.line.FactoryDetectLineAlgs;
+import boofcv.gui.binary.VisualizeBinaryData;
 import boofcv.struct.BoofDefaults;
 import boofcv.struct.FastQueue;
 import boofcv.struct.feature.AssociatedIndex;
@@ -61,9 +70,26 @@ import boofcv.struct.image.MultiSpectral;
  */
 public class StitcherFacade {
 	private static StitcherFacade instance;
+	private BufferedImage panorama;
+	/**
+	 * Corner points of regions in panorama
+	 */
+	private List<ImageRegion> regions;
+	/**
+	 * Original images
+	 */
 	private List<BufferedImage> registeredImages;
+	/**
+	 * Converted images
+	 */
 	private Map< BufferedImage, MultiSpectral< ImageFloat32 > > images;
+	/**
+	 * Interest points in images
+	 */
 	private Map< BufferedImage, List<InterestPoint> > interestPoints;
+	/**
+	 * Homographies between images (from left to middle and right to middle)
+	 */
 	private List<Homography> orientedImages;
 	private DetectDescribePoint detectDescribe;
 	private ScoreAssociation<SurfFeature> scorer;
@@ -74,6 +100,7 @@ public class StitcherFacade {
 		images = new HashMap< BufferedImage, MultiSpectral< ImageFloat32 > >();
 		interestPoints = new HashMap< BufferedImage, List<InterestPoint>>();
 		orientedImages = new  LinkedList<Homography>();
+		regions = new LinkedList<ImageRegion>();
 	}
 	
 	public static StitcherFacade getInstance() {
@@ -138,55 +165,161 @@ public class StitcherFacade {
 		return new Point2D_I32((int)result.x,(int)result.y);
 	}
 	
-	public BufferedImage stitch( Homography homo, boolean preview ) {		
-		MultiSpectral<ImageFloat32> color1 = convertToBoof( homo.getImage1() );
-		MultiSpectral<ImageFloat32> color2 = convertToBoof( homo.getImage2() );
-		MultiSpectral<ImageFloat32> work = new MultiSpectral<ImageFloat32>(ImageFloat32.class, color1.getWidth(), color1.getHeight(), 4);
+	public BufferedImage makePanorama( int width, int height ) throws OrientationFailedException {
+		// stitch all images together
+		BufferedImage rawPano = stitchTogether( width, height, false );
+		MultiSpectral<ImageFloat32> input = convertToBoof( rawPano );
+		ImageFloat32 gray = grayscale( input );
+		// task: cut black area
 		
-		PixelTransformHomography_F32 model = new PixelTransformHomography_F32();
-		InterpolatePixel<ImageFloat32> interp = new ImplBilinearPixel_F32();
-		ImageDistort<MultiSpectral<ImageFloat32>> distort = DistortSupport.createDistortMS(ImageFloat32.class, model, interp, null);
+		/**
+		 * Inverse Star Wars or Inside-out Gargabe Compactor (IGC) algorithm
+		 * ===
+		 * 1) Binarize Image
+		 * 2) Detect Line Segments
+		 * 3) Find enclosing rectangle
+		 * 4) Put small square at center of enclosing rectangle
+		 * 5) Try to enlarge <amount of pixel> in every direction (top, left, bottom, right)
+		 * 		Enlargement is possible if there are (almost?) no white pixels in claimed area
+		 * 6) Repeat 5) until no further enlargement is possible
+		 */
 		
-		// draw first image
-		float s = 1f; // scale
-		int w = color1.width/4;
-		int h = color1.height/4;
-		Homography2D_F64 workToFirst = new Homography2D_F64(s, 0, w,
-															0, s, h,
-															0, 0, 1 );
-		workToFirst.invert(null);
-		model.set( workToFirst );
-		distort.apply( color1, work );
-		// draw second image
-		Homography2D_F64 workToSecond = workToFirst.concat(homo.getHomography(), null);
-		model.set( workToSecond );
-		distort.apply( color2, work );
+		// 1) binarize image
+		BufferedImage bin = binary( input, 1f );
+		ImageFloat32 binary = new ImageFloat32( bin.getWidth(), bin.getHeight() );
+		ConvertBufferedImage.convertFromSingle( bin, binary, ImageFloat32.class);
+		Utility.saveImage( bin );
 		
-		BufferedImage output = new BufferedImage( work.width, work.height, homo.getImage1().getType() );
-		ConvertBufferedImage.convertTo( work, output );
+		// 2) detect line segments
+		DetectLineSegmentsGridRansac<ImageFloat32, ImageFloat32> detector = FactoryDetectLineAlgs.lineRansac(40, 30, 2.36, true, ImageFloat32.class, ImageFloat32.class);
+		List<LineSegment2D_F32> found = detector.detect( binary );
 		
-		if ( preview ) {
-			// project corner points of second image
-			Point2D_I32 corners[] = { new Point2D_I32(), new Point2D_I32(), new Point2D_I32(), new Point2D_I32()};
-			Homography2D_F64 secondToWork = workToSecond.invert(null);
-			corners[0] = projectPoint( 0, 0, secondToWork );
-			corners[1] = projectPoint( color2.width, 0, secondToWork );
-			corners[2] = projectPoint( color2.width, color2.height, secondToWork );
-			corners[3] = projectPoint( 0, color2.height,secondToWork );
-			// draw in output
-			Graphics2D g = output.createGraphics();
-			g.setStroke( new BasicStroke( 3 ) );
-			g.setColor( Color.RED );
-			g.drawLine( corners[0].x, corners[0].y, corners[1].x, corners[1].y );
-			g.drawLine( corners[1].x, corners[1].y, corners[2].x, corners[2].y );
-			g.drawLine( corners[2].x, corners[2].y, corners[3].x, corners[3].y );
-			g.drawLine( corners[3].x, corners[3].y, corners[0].x, corners[0].y );
-			g.dispose();
+		Graphics2D g = bin.createGraphics();
+		g.setStroke( new BasicStroke( 3 ) );
+		g.setColor( Color.GREEN );
+		for ( LineSegment2D_F32 line : found ) {
+			g.drawLine( (int)line.a.x, (int)line.a.y, (int)line.b.x, (int)line.b.y );
+		}
+		g.dispose();
+		Utility.saveImage( bin );
+		
+		// 3) find enclosing rectangle = left-most, top-most, right-most, bottom-most point
+		int lmost = binary.width, 
+			  tmost = binary.height,
+			  rmost = 0,
+			  bmost = 0;
+		
+		for ( LineSegment2D_F32 line : found ) {
+			Point2D_F32 left = line.a.x < line.b.x ? line.a : line.b,
+						right = line.a.x > line.b.x ? line.a : line.b,
+						top = line.a.y < line.b.y ? line.a : line.b,
+						bottom = line.a.y > line.b.y ? line.a : line.b;
+			
+			if ( left.x < lmost ) {
+				lmost = (int)left.x;
+			}
+			if ( right.x > rmost ) {
+				rmost = (int)right.x;
+			}
+			if ( top.y < tmost ) {
+				tmost = (int)top.y;
+			}
+			if ( bottom.y > bmost ) {
+				bmost = (int)bottom.y;
+			}
 		}
 		
-		//Utility.saveImage( output );
+		// 3a) cut it out
+		ImageFloat32 rectangle = binary.subimage(lmost, tmost, rmost, bmost);
+		Utility.saveImage( rectangle );
 		
-		return output;
+		// 4) define small square inside of rectangle
+		int squareSize = 10; // 10px
+		int centerWidth = rectangle.width/2,
+			centerHeight = rectangle.height/2;
+		
+		ImageRegion square = ImageRegion.getFromSquare( centerWidth, centerHeight, squareSize );
+		System.out.println( "Square: " + square );
+		
+		BufferedImage rect = new BufferedImage( rectangle.width, rectangle.height, BufferedImage.TYPE_INT_RGB );
+		ConvertBufferedImage.convertTo( rectangle, rect );
+		g = rect.createGraphics();
+		g.setStroke( new BasicStroke( 3 ) );
+		g.setColor( Color.RED );
+		g.drawRect( square.tleft[0], square.tleft[1], square.getWidth(), square.getHeight() );
+		g.dispose();
+		Utility.saveImage( rect );
+		
+		// 5) grow square iteratively
+		boolean growLeft = true,
+				growRight = true,
+				growBottom = true,
+				growTop = true;
+		int push = 10;
+		float threshold = 0.95f; 
+		int maxiterations = Math.max( rectangle.width/push, rectangle.height/push );
+		while ( ( growLeft || growRight || growBottom || growTop ) && maxiterations >= 0 ) {
+			if ( growLeft ) {
+				// grow square <push> px to left
+				boolean grown = square.grow( Direction.LEFT, push );
+				if ( grown ) {
+					// if square is actually bigger now
+					// check area there
+					ImageFloat32 claimed = rectangle.subimage( square.tleft[0], square.tleft[1], square.bleft[0] + push, square.bleft[1] + push );
+					double mean = ImageStatistics.mean( claimed );
+					growLeft = mean < ( 1 - threshold )*255;
+				} else
+					growLeft = false;
+			}
+			if ( growTop ) {
+				boolean grown = square.grow( Direction.TOP,  push );
+				if ( grown ) {
+					ImageFloat32 claimed = rectangle.subimage( square.tleft[0], square.tleft[1], square.tright[0], square.tright[1] + push );
+					double mean = ImageStatistics.mean( claimed );
+					growTop = mean < ( 1 - threshold )*255;
+					
+				} else
+					growTop = false;
+			}
+			if ( growBottom ) {
+				square.grow( Direction.BOTTOM, push );
+				if ( square.bleft[1] > rectangle.height )
+					square.bleft[1] = rectangle.height;
+				if ( square.bright[1] > rectangle.height )
+					square.bright[1] = rectangle.height;
+				ImageFloat32 claimed = rectangle.subimage( square.bleft[0], square.bleft[1] - push, square.bright[0], square.bright[1] );
+				double mean = ImageStatistics.mean( claimed );
+				growBottom = mean < ( 1 - threshold )*255;
+			}
+			if ( growRight ) {
+				square.grow( Direction.RIGHT, push );
+				// pluck new values if necessary
+				if ( square.tright[0] > rectangle.width )
+					square.tright[0] = rectangle.width;
+				if ( square.bright[0] > rectangle.width )
+					square.bright[0] = rectangle.width;
+				ImageFloat32 claimed = rectangle.subimage( square.tright[0] - push, square.tright[1], square.bright[0], square.bright[1] );
+				double mean = ImageStatistics.mean( claimed );
+				growRight = mean < ( 1 - threshold )*255;
+			}
+			maxiterations--;
+		}
+		
+		// 6) cut region from rawPano
+		
+		int x0 = square.tleft[0],
+			y0 = square.tleft[1],
+			x1 = square.bright[0],
+			y1 = square.bright[1];
+		// now we have a rectangle definded by (x0,y0) and (x1,y)
+		// cut black area
+		MultiSpectral<ImageFloat32> pano = input.subimage(lmost, tmost, rmost, bmost); // cut outer rectangle
+		pano = pano.subimage( (int) x0, (int) y0, (int) x1, (int) y1 ); // cut inner rectangle
+		panorama = new BufferedImage( pano.width, pano.height, BufferedImage.TYPE_INT_RGB );
+		ConvertBufferedImage.convertTo( pano, panorama );
+		
+		Utility.saveImage( panorama );
+		return panorama;
 	}
 	
 	/**
@@ -198,6 +331,7 @@ public class StitcherFacade {
 	public BufferedImage stitchTogether( int width, int height, boolean preview ) throws OrientationFailedException {
 		int size = registeredImages.size();
 		int m = size % 2 == 0 ? size / 2 : ( size - 1 ) / 2;
+		regions.clear();
 		System.out.println( "Middle index: " + m );
 		// orient all image pairs
 		orientImages();
@@ -220,7 +354,6 @@ public class StitcherFacade {
 		distort.apply( middle, work );
 		
 		// now there is our middle image on the surface. whee! let's draw all the other images too!
-		List<List<Point2D_I32>> points = new LinkedList<List<Point2D_I32>>(); // that are the corner points we may need to draw too, depending on preview value
 		List<Homography2D_F64> usedHomos = new LinkedList<Homography2D_F64>(); // because we need to multiply some matrices on the way from the middle to the outer sides
 		usedHomos.add( workToMiddle );
 		// draw from middle to outer left
@@ -242,12 +375,13 @@ public class StitcherFacade {
 			
 			// awesome! now save the points to draw later!
 			Homography2D_F64 toSingle = singleHomo.invert( null );
-			List<Point2D_I32> popo = new ArrayList<Point2D_I32>();
-			popo.add( projectPoint( 0, 0, toSingle ) );
-			popo.add( projectPoint( toStitchBoof.width, 0, toSingle ) );
-			popo.add( projectPoint( toStitchBoof.width, toStitchBoof.height, toSingle ) );
-			popo.add( projectPoint( 0, toStitchBoof.height, toSingle ) );
-			points.add( popo );
+			ImageRegion region = new ImageRegion( 
+					projectPoint( 0, 0, toSingle ),
+					projectPoint( toStitchBoof.width, 0, toSingle ),
+					projectPoint( toStitchBoof.width, toStitchBoof.height, toSingle ),
+					projectPoint( 0, toStitchBoof.height, toSingle )
+			);
+			regions.add( region );
 		}
 		// clear used homographies
 		usedHomos.clear();
@@ -270,12 +404,13 @@ public class StitcherFacade {
 			distort.apply( toStitchBoof, work );
 			
 			Homography2D_F64 toSingle = singleHomo.invert( null );
-			List<Point2D_I32> popo = new ArrayList<Point2D_I32>();
-			popo.add( projectPoint( 0, 0, toSingle ) );
-			popo.add( projectPoint( toStitchBoof.width, 0, toSingle ) );
-			popo.add( projectPoint( toStitchBoof.width, toStitchBoof.height, toSingle ) );
-			popo.add( projectPoint( 0, toStitchBoof.height, toSingle ) );
-			points.add( popo );
+			ImageRegion region = new ImageRegion( 
+					projectPoint( 0, 0, toSingle ),
+					projectPoint( toStitchBoof.width, 0, toSingle ),
+					projectPoint( toStitchBoof.width, toStitchBoof.height, toSingle ),
+					projectPoint( 0, toStitchBoof.height, toSingle )
+			);
+			regions.add( region );
 		}
 		
 		// well well well young fella. now every image is on the not-so-black-anymore surface
@@ -289,15 +424,15 @@ public class StitcherFacade {
 			g.setStroke( new BasicStroke( 3 ) );
 			g.setColor( Color.RED );
 			// draw all the lines in it
-			for( List<Point2D_I32> popo : points ) {
-				Point2D_I32 a = popo.get( 0 ),
-							b = popo.get( 1 ),
-							c = popo.get( 2 ),
-							d = popo.get( 3 );
-				g.drawLine( a.x, a.y, b.x, b.y );
-				g.drawLine( b.x, b.y, c.x, c.y );
-				g.drawLine( c.x, c.y, d.x, d.y );
-				g.drawLine( d.x, d.y, a.x, a.y );
+			for( ImageRegion region : regions ) {
+				int[] a = region.tleft,
+					  b = region.tright,
+					  c = region.bright,
+					  d = region.bleft;
+				g.drawLine( a[0], a[1], b[0], b[1] );
+				g.drawLine( b[0], b[1], c[0], c[1] );
+				g.drawLine( c[0], c[1], d[0], d[1] );
+				g.drawLine( d[0], d[1], a[0], a[1] );
 			}
 			g.dispose();
 		}
@@ -461,6 +596,19 @@ public class StitcherFacade {
 		return copy;
 	}
 	
+	private ImageFloat32 grayscale( MultiSpectral<ImageFloat32> img ) {
+		ImageFloat32 gray = new ImageFloat32( img.getWidth(), img.getHeight() );
+		GPixelMath.averageBand(img, gray);
+		return gray;
+	}
+	
+	private BufferedImage binary( MultiSpectral<ImageFloat32> img, float threshold ) {
+		ImageFloat32 gray = grayscale( img );
+		ImageUInt8 bin = new ImageUInt8( gray.width, gray.height );
+		ThresholdImageOps.threshold( gray, bin, threshold, true );
+		return VisualizeBinaryData.renderBinary(bin,null);
+	}
+	
 	/**
 	 * Detects interest points in image.
 	 * @param img
@@ -476,8 +624,7 @@ public class StitcherFacade {
 			return null;
 		}
 		//convert to grayscale image
-		ImageFloat32 gray = new ImageFloat32( img.getWidth(), img.getHeight() );
-		GPixelMath.averageBand(image, gray);
+		ImageFloat32 gray = grayscale( image );
 		// compute
 		List<InterestPoint> ips = new LinkedList<InterestPoint>();
 		// 10f, 2, 100, 2, 9, 3, 4

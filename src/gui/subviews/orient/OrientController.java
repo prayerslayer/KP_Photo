@@ -33,8 +33,4 @@ public class OrientController extends SubController {
 		return stitcher.stitchTogether(width, height, preview);
 	}
 
-	public BufferedImage stitch( Homography h ) {
-		return stitcher.stitch( h, true );
-	}
-
 }
