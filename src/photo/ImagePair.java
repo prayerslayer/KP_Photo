@@ -26,6 +26,10 @@ public class ImagePair{
 		}
 		return false;
 	}
+	
+	public int hashCode() {
+		return image1.hashCode() + image2.hashCode();
+	}
 
 	public BufferedImage getImage1() {
 		return image1;

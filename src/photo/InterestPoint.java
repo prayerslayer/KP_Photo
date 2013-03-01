@@ -12,6 +12,7 @@ public class InterestPoint {
 	private double x;
 	private double y;
 	private double radius;
+	private boolean matched;
 	private SurfFeature description;
 	
 	public InterestPoint( double x, double y, double radius, SurfFeature description ) {
@@ -19,6 +20,15 @@ public class InterestPoint {
 		this.y = y;
 		this.radius = radius;
 		this.description = description;
+		matched = false;
+	}
+	
+	public void setMatched( boolean o ) {
+		matched = o;
+	}
+	
+	public boolean isMatched() {
+		return matched;
 	}
 
 	public double getX() {

@@ -6,7 +6,9 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
+import photo.Homography;
 import photo.InterestPoint;
+import photo.OrientationFailedException;
 import photo.PointAssociation;
 import photo.StitcherFacade;
 import gui.subviews.SubController;
@@ -33,5 +35,13 @@ public class AssociateController extends SubController {
 
 	public List<InterestPoint> getInterestPointsFor(BufferedImage img) {
 		return stitcher.getInterestPointsFor( img );
+	}
+	
+	public List<PointAssociation> getMatchedAssociations( BufferedImage left, BufferedImage right ) {
+		return stitcher.getMatchedAssociations( left, right );
+	}
+
+	public Homography orientImages(BufferedImage left, BufferedImage right) throws OrientationFailedException {
+		return stitcher.orientImages(left, right);
 	}
 }

@@ -11,35 +11,25 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import javax.imageio.ImageIO;
-
 import org.ddogleg.fitting.modelset.ModelMatcher;
 import org.ddogleg.fitting.modelset.ransac.Ransac;
 
-import util.RunningStats;
 import util.Utility;
 
 import boofcv.abst.feature.associate.AssociateDescription;
 import boofcv.abst.feature.associate.ScoreAssociation;
 import boofcv.abst.feature.detdesc.DetectDescribePoint;
 import boofcv.abst.feature.detect.interest.ConfigFastHessian;
-import boofcv.abst.feature.detect.interest.InterestPointDetector;
 import boofcv.abst.feature.detect.line.DetectLineSegmentsGridRansac;
 import boofcv.alg.distort.ImageDistort;
 import boofcv.alg.distort.PixelTransformHomography_F32;
 import boofcv.alg.distort.impl.DistortSupport;
 import boofcv.alg.feature.UtilFeature;
-import boofcv.alg.feature.detect.grid.IntensityHistogram;
 import boofcv.alg.filter.binary.ThresholdImageOps;
 import boofcv.alg.interpolate.InterpolatePixel;
 import boofcv.alg.interpolate.impl.ImplBilinearPixel_F32;
@@ -50,14 +40,12 @@ import boofcv.alg.sfm.robust.GenerateHomographyLinear;
 import boofcv.core.image.ConvertBufferedImage;
 import boofcv.factory.feature.associate.FactoryAssociation;
 import boofcv.factory.feature.detdesc.FactoryDetectDescribe;
-import boofcv.factory.feature.detect.interest.FactoryInterestPoint;
 import boofcv.factory.feature.detect.line.FactoryDetectLineAlgs;
 import boofcv.gui.binary.VisualizeBinaryData;
 import boofcv.struct.BoofDefaults;
 import boofcv.struct.FastQueue;
 import boofcv.struct.feature.AssociatedIndex;
 import boofcv.struct.feature.SurfFeature;
-import boofcv.struct.feature.TupleDesc;
 import boofcv.struct.geo.AssociatedPair;
 import boofcv.struct.image.ImageFloat32;
 import boofcv.struct.image.ImageUInt8;
@@ -91,6 +79,10 @@ public class StitcherFacade {
 	 * Homographies between images (from left to middle and right to middle)
 	 */
 	private List<Homography> orientedImages;
+	/**
+	 * Which associations were successful.
+	 */
+	private Map<ImagePair, List<PointAssociation>> matchedAssociations;
 	private DetectDescribePoint detectDescribe;
 	private ScoreAssociation<SurfFeature> scorer;
 	private AssociateDescription<SurfFeature> association;
@@ -101,6 +93,7 @@ public class StitcherFacade {
 		interestPoints = new HashMap< BufferedImage, List<InterestPoint>>();
 		orientedImages = new  LinkedList<Homography>();
 		regions = new LinkedList<ImageRegion>();
+		matchedAssociations = new HashMap<ImagePair, List<PointAssociation>>();
 	}
 	
 	public static StitcherFacade getInstance() {
@@ -156,6 +149,10 @@ public class StitcherFacade {
 	 */
 	public List<BufferedImage> getRegisteredImages() {
 		return registeredImages;
+	}
+	
+	public List<PointAssociation> getMatchedAssociations( BufferedImage img1, BufferedImage img2 ) {
+		return matchedAssociations.get( new ImagePair( img1, img2 ) );
 	}
 	
 	private Point2D_I32 projectPoint( int x0 , int y0 , Homography2D_F64 fromBtoWork )
@@ -487,7 +484,8 @@ public class StitcherFacade {
 		List<PointAssociation> associations = associateInterestPoints(img1, img2);
 		InterestPoint ip1, ip2;
 		Point2D_F64 p1, p2;
-		for ( PointAssociation pa : associations ) {
+		for ( int i = 0; i <= associations.size() - 1; i++ ) {
+			PointAssociation pa = associations.get(i); 
 			ip1 = interestPoints.get( img1 ).get( pa.getSource() );
 			ip2 = interestPoints.get( img2 ).get( pa.getDestination() );
 			p1 = new Point2D_F64( ip1.getX(), ip1.getY() );
@@ -505,6 +503,15 @@ public class StitcherFacade {
 		if ( !modelMatcher.process( pairs ) )
 			throw new OrientationFailedException();
 		
+		// save matched associations
+		List<PointAssociation> matches = new LinkedList<PointAssociation>();
+		ImagePair pair = new ImagePair( img1, img2 );
+		for ( AssociatedPair p : modelMatcher.getMatchSet() ) {
+			int idx = pairs.indexOf( p );
+			matches.add( associations.get( idx ) );
+		}
+		matchedAssociations.put( pair, matches );
+		// return homography
 		Homography2D_F64 result = modelMatcher.getModel().copy();
 		System.out.println( "Rotation matrix:" );
 		System.out.println( result );

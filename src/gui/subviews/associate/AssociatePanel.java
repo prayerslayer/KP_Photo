@@ -7,6 +7,7 @@ import javax.swing.JLabel;
 import javax.swing.JSplitPane;
 
 import photo.InterestPoint;
+import photo.OrientationFailedException;
 import photo.PointAssociation;
 import photo.StitcherFacade;
 import util.Utility;
@@ -31,6 +32,7 @@ public class AssociatePanel extends SubView {
 	private BufferedImage combined;
 	private Map<BufferedImage, List<InterestPoint>> images;
 	private List<PointAssociation> associations;
+	private List<PointAssociation> matches;
 	private JLabel lblImage;
 	
 	public AssociatePanel() {
@@ -44,13 +46,6 @@ public class AssociatePanel extends SubView {
 		JPanel panel = new JPanel();
 		add(panel, BorderLayout.SOUTH);
 		panel.setLayout(new GridLayout(0, 1, 0, 0));
-		
-		JButton btnNchsteAssoziation = new JButton("Nächste Assoziation");
-		btnNchsteAssoziation.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		panel.add(btnNchsteAssoziation);
 		
 		JButton btnAlleAssoziationen = new JButton("Alle Assoziationen");
 		btnAlleAssoziationen.addActionListener(new ActionListener() {
@@ -76,6 +71,15 @@ public class AssociatePanel extends SubView {
 		right = imgs.get(1);
 		// get associations
 		associations = ((AssociateController)controller).associateImages( left, right );
+		
+		try {
+			// no joke, needed for matched associations
+			((AssociateController)controller).orientImages( left, right );
+			matches = ((AssociateController)controller).getMatchedAssociations(left, right);
+		} catch (OrientationFailedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// draw them
 		BufferedImage leftcopy = Utility.duplicateImage( left );
 		BufferedImage rightcopy = Utility.duplicateImage( right );
@@ -92,17 +96,22 @@ public class AssociatePanel extends SubView {
 		for ( PointAssociation pa : associations ) {
 			InterestPoint l = leftinterest.get( pa.getSource() );
 			InterestPoint r = rightinterest.get( pa.getDestination() );
-			double score = pa.getScore();
 			
-			drawAssociation( l, r, score );
+			drawAssociation( l, r, false );
+		}
+		for ( PointAssociation pa : matches ) {
+			InterestPoint l = leftinterest.get( pa.getSource() );
+			InterestPoint r = rightinterest.get( pa.getDestination() );
+			
+			drawAssociation( l, r, true );
 		}
 		lblImage.setIcon( new ImageIcon( Utility.resizeImage( combined, 2f ) ) );
 	}
 	
-	private void drawAssociation(InterestPoint l, InterestPoint r, double score) {
+	private void drawAssociation(InterestPoint l, InterestPoint r, boolean match) {
 		Graphics2D g = combined.createGraphics();
-		g.setColor( Color.RED );
-		g.setStroke( new BasicStroke( (int) score*3 ) );
+		g.setColor( match ? Color.GREEN : Color.RED );
+		g.setStroke( new BasicStroke( 3 ) );
 		g.drawLine( (int) l.getX(), (int) l.getY(), (int)( left.getWidth()+Utility.GUTTER+r.getX() ), (int) r.getY() );
 		g.dispose();
 	}
