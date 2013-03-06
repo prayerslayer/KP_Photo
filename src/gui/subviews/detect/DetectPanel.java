@@ -48,7 +48,7 @@ public class DetectPanel extends SubView {
 	private FastHessianConfig config;
 	private Map<BufferedImage, List<InterestPoint>> interests;
 	private int currentImage = 0;
-	private AddInterestPointLabel lbImage;
+	private JLabel lbImage;
 	private JButton btPreviousImage;
 	private JButton btNextImage;
 	private JButton btFindIP;
@@ -57,7 +57,7 @@ public class DetectPanel extends SubView {
 	public DetectPanel() {
 		setLayout(new BorderLayout(0, 0));
 		
-		lbImage = new AddInterestPointLabel();
+		lbImage = new JLabel();
 		lbImage.setHorizontalAlignment( JLabel.CENTER );
 		lbImage.setSize(600, 600);
 		add(lbImage, BorderLayout.CENTER);
@@ -89,7 +89,6 @@ public class DetectPanel extends SubView {
 			renderInterestPoints(img);
 		} else {
 			BufferedImage copy = Utility.duplicateImage( img );
-			lbImage.setImage( copy );
 			lbImage.setIcon( new ImageIcon( Utility.resizeImage( copy ) ) );
 		}
 	}
@@ -159,7 +158,6 @@ public class DetectPanel extends SubView {
 			InterestPoint ip = iterator.next();
 			drawInterestPoint( copy, ip );
 		}
-		lbImage.setImage( copy );
 		lbImage.setIcon( new ImageIcon( Utility.resizeImage( copy ) ) );
 	}
 
