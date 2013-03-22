@@ -31,7 +31,7 @@ public class BlendPanel extends SubView {
 		lbImage = new JLabel();
 		lbImage.setHorizontalAlignment( JLabel.CENTER );
 		lbImage.setVerticalAlignment( JLabel.CENTER );
-		add(lbImage );
+		add(lbImage, BorderLayout.CENTER );
 		
 		final JPanel parent = this;
 		btSave = new JButton();
@@ -48,6 +48,9 @@ public class BlendPanel extends SubView {
 				int action = saveDlg.showSaveDialog( parent );
 				if ( action == JFileChooser.APPROVE_OPTION ) {
 					File file = saveDlg.getSelectedFile();
+					if ( !file.getName().endsWith( ".png" ) ) {
+						file = new File( file.getAbsolutePath() + ".png" );
+					}
 					try {
 						ImageIO.write( pano, "png", file );
 					} catch (IOException e) {
@@ -57,7 +60,7 @@ public class BlendPanel extends SubView {
 				}
 			}
 		});
-		add( btSave );
+		add( btSave, BorderLayout.SOUTH );
 	}
 
 	@Override
@@ -75,6 +78,11 @@ public class BlendPanel extends SubView {
 	@Override
 	public void reset() {
 		
+	}
+
+	@Override
+	public boolean canNext() {
+		return false;
 	}
 
 }

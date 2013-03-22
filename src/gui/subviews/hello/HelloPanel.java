@@ -28,4 +28,10 @@ public class HelloPanel extends SubView {
 	public void reset() {
 		
 	}
+
+	@Override
+	public boolean canNext() {
+		// TODO Auto-generated method stub
+		return true;
+	}
 }

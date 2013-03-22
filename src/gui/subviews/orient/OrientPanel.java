@@ -52,4 +52,9 @@ public class OrientPanel extends SubView {
 	public void reset() {
 		
 	}
+
+	@Override
+	public boolean canNext() {
+		return true;
+	}
 }

@@ -178,4 +178,9 @@ public class DetectPanel extends SubView {
 		render.drawOval( x-r/2, y-r/2, r, r );
 		render.dispose();
 	}
+
+	@Override
+	public boolean canNext() {
+		return true;
+	}
 }

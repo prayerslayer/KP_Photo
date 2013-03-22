@@ -145,5 +145,11 @@ public class UploadPanel extends SubView implements Observer {
 	public void reset() {
 		
 	}
+	@Override
+	public boolean canNext() {
+		if ( pnImages.getComponentCount() < 2 )
+			System.out.println( "Bitte mindestens 2 Bilder hinzufügen!" );
+		return pnImages.getComponentCount() >= 2;
+	}
 
 }

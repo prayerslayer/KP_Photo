@@ -121,4 +121,9 @@ public class AssociatePanel extends SubView {
 		
 	}
 
+	@Override
+	public boolean canNext() {
+		return true;
+	}
+
 }

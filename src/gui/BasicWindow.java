@@ -67,7 +67,6 @@ public class BasicWindow extends JFrame {
 	private List<SubView> subviews = new LinkedList<SubView>();
 	private int activeStep = 0;
 	
-	//TODO other panels are not shown?
 
 	/**
 	 * Creates subviews and adds them to panel (order is important), shows first.
@@ -84,6 +83,8 @@ public class BasicWindow extends JFrame {
 			content.add( view, BorderLayout.CENTER );
 		}
 		this.redirectSystemStreams();
+		
+		btPrevious.setEnabled( false );
 	}
 	
 	private void updateTextArea(final String text) {
@@ -120,12 +121,15 @@ public class BasicWindow extends JFrame {
 	 * Shows the next subview, if possible.
 	 */
 	public void next() {
-		if ( this.activeStep + 1 < subviews.size() ) {
+		if ( this.activeStep + 1 < subviews.size() && subviews.get( this.activeStep ).canNext()) {
+			pnBreadcrumbs.getComponent( this.activeStep ).setFont( new Font( "sansserif", Font.PLAIN, 14 ) );
 			this.activeStep += 1;
 			layout.next( content );
 			subviews.get( this.activeStep ).init();
+			btNext.setEnabled( this.activeStep + 1 < subviews.size() );
+			btPrevious.setEnabled( true );
+			pnBreadcrumbs.getComponent( this.activeStep ).setFont( new Font( "sansserif", Font.BOLD, 16 ) );
 		}
-		System.out.println( this.activeStep );
 	}
 	
 	/**
@@ -133,23 +137,14 @@ public class BasicWindow extends JFrame {
 	 */
 	public void previous() {
 		if ( this.activeStep - 1 >= 0 ) {
+			pnBreadcrumbs.getComponent( this.activeStep ).setFont( new Font( "sansserif", Font.PLAIN, 14 ) );
 			this.activeStep -= 1;
+			btNext.setEnabled( true );
+			btPrevious.setEnabled( this.activeStep - 1 >=0 );
+			pnBreadcrumbs.getComponent( this.activeStep ).setFont( new Font( "sansserif", Font.BOLD, 16 ) );
 			layout.previous( content );
 		}
 		System.out.println( this.activeStep);
-	}
-	
-	/**
-	 * Modifies controls according to current step of stitching.
-	 * @param step
-	 */
-	public void setActiveStep( int step ) {
-		btPrevious.setEnabled( step > 1 );
-		btNext.setEnabled( step < 5 );
-		for ( Component comp : pnBreadcrumbs.getComponents() ) {
-			comp.setBackground( Color.GRAY);
-		}
-		pnBreadcrumbs.getComponent( step - 1 ).setBackground( Color.BLUE );
 	}
 
 	/**
@@ -168,23 +163,33 @@ public class BasicWindow extends JFrame {
 		panel.add(pnBreadcrumbs, BorderLayout.NORTH);
 		pnBreadcrumbs.setLayout(new GridLayout(1, 0, 0, 0));
 		
-		JLabel lbStep1 = new JLabel("(1)");
+		JLabel lbStep0 = new JLabel("(0) Info");
+		lbStep0.setFont(new Font("sansserif", Font.BOLD, 16));
+		lbStep0.setHorizontalAlignment(SwingConstants.CENTER);
+		pnBreadcrumbs.add(lbStep0);
+		
+		JLabel lbStep1 = new JLabel("(1) Load");
+		lbStep1.setFont(new Font("sansserif", Font.PLAIN, 14));
 		lbStep1.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep1);
 		
-		JLabel lbStep2 = new JLabel("(2)");
+		JLabel lbStep2 = new JLabel("(2) Detect IP");
+		lbStep2.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		lbStep2.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep2);
 		
-		JLabel lbStep3 = new JLabel("(3)");
+		JLabel lbStep3 = new JLabel("(3) Match IP");
+		lbStep3.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		lbStep3.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep3);
 		
-		JLabel lbStep4 = new JLabel("(4)");
+		JLabel lbStep4 = new JLabel("(4) Orient");
+		lbStep4.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		lbStep4.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep4);
 		
-		JLabel lbStep5 = new JLabel("(5)");
+		JLabel lbStep5 = new JLabel("(5) Blend");
+		lbStep5.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		lbStep5.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep5);
 		
@@ -216,7 +221,7 @@ public class BasicWindow extends JFrame {
 		taInfo.setDropMode(DropMode.INSERT);
 		taInfo.setRows(5);
 		taInfo.setText("Info\ngoes\nhere\nyo");
-		taInfo.setFont(new Font("Lucida Console", Font.PLAIN, 11));
+		taInfo.setFont(new Font("monospaced", Font.PLAIN, 11));
 		
 		JScrollPane scrollPane = new JScrollPane( taInfo );
 		scrollPane.setAutoscrolls( true );
