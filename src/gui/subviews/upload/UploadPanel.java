@@ -27,11 +27,14 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class UploadPanel extends SubView implements Observer {
 
 	private JScrollPane spImages;
 	private JPanel pnImages;
+	private JButton btnStandardbilderLaden;
 	/**
 	 * Create the panel.
 	 */
@@ -45,7 +48,8 @@ public class UploadPanel extends SubView implements Observer {
 		add(pnButtons, BorderLayout.EAST);
 		pnButtons.setLayout( new GridLayout( 3, 1, 0, 0 ) );
 		
-		JButton btAdd = new JButton("Hinzufügen");
+		JButton btAdd = new JButton("Eigene Bilder laden");
+
 		btAdd.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -79,46 +83,11 @@ public class UploadPanel extends SubView implements Observer {
 					}
 					
 				});
-				int action = chooser.showDialog( parent, "Hinzufügen" );
+				int action = chooser.showDialog( parent, "Bilder laden" );
 				if ( action == JFileChooser.APPROVE_OPTION ) {
 					File[] files = chooser.getSelectedFiles();
 					for ( File file : files ) {
-						try {
-							//read image
-							BufferedImage img = ImageIO.read( file );
-							//resize if necessary
-							if ( img.getWidth() > 1000 || img.getHeight() > 1000 )
-								img = Utility.scaleImage(img, 1000 );
-							//register image at controller for further calculations
-							((UploadController) controller).registerImage( img );
-							
-							ImagePanel imgPanel = new ImagePanel( file.getName(), img );
-							imgPanel.addPropertyChangeListener("delete", new PropertyChangeListener()  {
-								
-								@Override
-								public void propertyChange(PropertyChangeEvent evt) {
-									// delete it
-									BufferedImage img = ( BufferedImage ) evt.getOldValue();
-									((UploadController) controller).unregisterImage( img );
-									for ( Component panel : pnImages.getComponents() ) {
-										if ( ((ImagePanel) panel).getBufferedImage().equals( img ) ) {
-											pnImages.remove( panel );
-											// a little hack because revalidate() did not update the container when the last image was deleted. nor did validate() and invalidate()
-											spImages.setSize( spImages.getWidth() +1, spImages.getHeight() );
-										}
-									}
-								}
-							});
-							pnImages.add( imgPanel );
-							System.out.println( "Added image " + file.getName() + " ( " + img.getWidth() + " x " + img.getHeight() + " px )" );
-							
-						} catch ( IOException ioex ) {
-							System.err.println( "Could not load " + file.getName() );
-							ioex.printStackTrace();
-						} catch ( Exception ex ) {
-							System.err.println( ex.toString() );
-							ex.printStackTrace();
-						}
+						loadImage( file );
 					}
 					spImages.revalidate();
 				}
@@ -127,12 +96,67 @@ public class UploadPanel extends SubView implements Observer {
 		
 		pnButtons.add(btAdd);
 		
+		btnStandardbilderLaden = new JButton("Standardbilder laden");
+		btnStandardbilderLaden.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				File pano1 = new File( getClass().getResource( "/gui/images/panorama1.jpg" ).getFile() );
+				File pano2 = new File( getClass().getResource( "/gui/images/panorama2.jpg" ).getFile() );
+				File pano3 = new File( getClass().getResource( "/gui/images/panorama3.jpg" ).getFile() );
+				loadImage( pano1 );
+				loadImage( pano2 );
+				loadImage( pano3 );
+			}
+		});
+		pnButtons.add(btnStandardbilderLaden);
+		
 		pnImages = new JPanel();
 		pnImages.setLayout( new FlowLayout( FlowLayout.LEFT ) );
 		//add( pnImages, BorderLayout.CENTER );
 		spImages = new JScrollPane( pnImages );
 		add(spImages, BorderLayout.CENTER);
 	}
+	
+	private void loadImage( File file ) {
+		//read image
+		try {
+			
+
+			BufferedImage img = ImageIO.read( file );
+			//resize if necessary
+			if ( img.getWidth() > 1000 || img.getHeight() > 1000 )
+				img = Utility.scaleImage(img, 1000 );
+			//register image at controller for further calculations
+			((UploadController) controller).registerImage( img );
+			
+			ImagePanel imgPanel = new ImagePanel( file.getName(), img );
+			imgPanel.addPropertyChangeListener("delete", new PropertyChangeListener()  {
+				
+				@Override
+				public void propertyChange(PropertyChangeEvent evt) {
+					// delete it
+					BufferedImage img = ( BufferedImage ) evt.getOldValue();
+					((UploadController) controller).unregisterImage( img );
+					for ( Component panel : pnImages.getComponents() ) {
+						if ( ((ImagePanel) panel).getBufferedImage().equals( img ) ) {
+							pnImages.remove( panel );
+							// a little hack because revalidate() did not update the container when the last image was deleted. nor did validate() and invalidate()
+							spImages.setSize( spImages.getWidth() +1, spImages.getHeight() );
+						}
+					}
+				}
+			});
+			pnImages.add( imgPanel );
+			pnImages.setSize( spImages.getWidth() - 1, spImages.getHeight() );
+			System.out.println( "Added image " + file.getName() + " ( " + img.getWidth() + " x " + img.getHeight() + " px )" );
+		}  catch ( IOException ioex ) {
+			System.err.println( "Could not load " + file.getName() );
+			ioex.printStackTrace();
+		} catch ( Exception ex ) {
+			System.err.println( ex.toString() );
+			ex.printStackTrace();
+		}
+	}
+	
 	@Override
 	public void update(Observable o, Object arg) {
 		System.out.println( "Delete image " + ( (int) arg ));
