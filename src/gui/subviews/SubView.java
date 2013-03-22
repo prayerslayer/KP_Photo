@@ -13,4 +13,5 @@ public abstract class SubView extends JPanel {
 	
 	public abstract void init();
 	public abstract void reset();
+	public abstract boolean canNext();
 }
