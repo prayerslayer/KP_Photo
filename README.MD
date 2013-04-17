@@ -6,3 +6,4 @@
 
 * Erklärungen hinzufügen
 * Dokumentieren
+* ITerationen für Homograhpie RANSAC definieren
