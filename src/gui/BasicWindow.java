@@ -7,6 +7,7 @@ import gui.subviews.detect.DetectPanel;
 import gui.subviews.hello.HelloPanel;
 import gui.subviews.orient.OrientPanel;
 import gui.subviews.upload.UploadPanel;
+import help.HelpFactory;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
@@ -133,6 +134,13 @@ public class BasicWindow extends JFrame {
 	}
 	
 	/**
+	 * Shows the help dialogue.
+	 */
+	public void showHelp() {
+		HelpFactory.getInstance().getHelp( this.activeStep ).setVisible( true );
+	}
+	
+	/**
 	 * Shows the previous subview, if available.	
 	 */
 	public void previous() {
@@ -192,6 +200,14 @@ public class BasicWindow extends JFrame {
 		lbStep5.setFont(new Font("SansSerif", Font.PLAIN, 14));
 		lbStep5.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep5);
+		
+		JButton btHelp = new JButton("Help");
+		btHelp.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				showHelp();
+			}
+		});
+		pnBreadcrumbs.add(btHelp);
 		
 		JPanel pnLogNav = new JPanel();
 		panel.add(pnLogNav, BorderLayout.SOUTH);
