@@ -160,6 +160,9 @@ public class Utility {
 			filename = output.hashCode() + "";
 		}
 		try {
+			File folder = new File( "temp" );
+			if ( !folder.exists() )
+				folder.mkdir();
 			File file = new File( "temp" + File.separator + filename +".png" );
 			if ( file.exists() ) {
 				file = new File( "temp" + File.separator + filename + "_" + new GregorianCalendar().getTimeInMillis() + ".png" );
