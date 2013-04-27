@@ -19,6 +19,11 @@ import javax.swing.JPanel;
 import photo.OrientationFailedException;
 import photo.StitcherFacade;
 
+/**
+ * UI for image blending step.
+ * @author xnikp
+ *
+ */
 public class BlendPanel extends SubView {
 	
 	private JLabel lbImage;
@@ -55,7 +60,7 @@ public class BlendPanel extends SubView {
 						ImageIO.write( pano, "png", file );
 					} catch (IOException e) {
 						e.printStackTrace();
-						//TODO show message pane
+						System.out.println( "Could not write image to " + file.getName() );
 					}
 				}
 			}

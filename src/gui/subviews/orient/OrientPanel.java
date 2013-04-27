@@ -18,11 +18,22 @@ import java.awt.BorderLayout;
 import java.util.List;
 import java.awt.image.BufferedImage;
 
+/**
+ * UI for image orientation step
+ * @author xnikp
+ *
+ */
 public class OrientPanel extends SubView {
 	
 	private JLabel lbImage;
+	/**
+	 * Relative orientations
+	 */
 	private List<Homography> homos;
 	
+	/**
+	 * Creates new OrientPanel
+	 */
 	public OrientPanel() {
 		setLayout(new BorderLayout(0, 0));
 		

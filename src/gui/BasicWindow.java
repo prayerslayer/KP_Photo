@@ -88,6 +88,10 @@ public class BasicWindow extends JFrame {
 		btPrevious.setEnabled( false );
 	}
 	
+	/**
+	 * Used for System.out and System.err redirection
+	 * @param text
+	 */
 	private void updateTextArea(final String text) {
 	  SwingUtilities.invokeLater(new Runnable() {
 	    public void run() {
@@ -95,7 +99,10 @@ public class BasicWindow extends JFrame {
 	    }
 	  });
 	}
-		 
+	
+	/**
+	 * Redirect System.out and System.err streams to text area
+	 */
 	private void redirectSystemStreams() {
 	  OutputStream out = new OutputStream() {
 	    @Override
@@ -159,7 +166,7 @@ public class BasicWindow extends JFrame {
 	 * Create the frame.
 	 */
 	public BasicWindow() {
-		setFont(new Font("Helvetica", Font.PLAIN, 12));
+		setFont(new Font("sansserif", Font.PLAIN, 12));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 800, 600);
 		JPanel panel = new JPanel();
@@ -182,22 +189,22 @@ public class BasicWindow extends JFrame {
 		pnBreadcrumbs.add(lbStep1);
 		
 		JLabel lbStep2 = new JLabel("(2) Detect IP");
-		lbStep2.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		lbStep2.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep2.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep2);
 		
 		JLabel lbStep3 = new JLabel("(3) Match IP");
-		lbStep3.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		lbStep3.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep3.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep3);
 		
 		JLabel lbStep4 = new JLabel("(4) Orient");
-		lbStep4.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		lbStep4.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep4.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep4);
 		
 		JLabel lbStep5 = new JLabel("(5) Blend");
-		lbStep5.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		lbStep5.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep5.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep5);
 		

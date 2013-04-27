@@ -6,7 +6,15 @@ import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.SwingConstants;
 
+/**
+ * UI for initial panel
+ * @author xnikp
+ *
+ */
 public class HelloPanel extends SubView {
+	/**
+	 * Creates new HelloPanel
+	 */
 	public HelloPanel() {
 		setLayout(new BorderLayout(0, 0));
 		
@@ -31,7 +39,6 @@ public class HelloPanel extends SubView {
 
 	@Override
 	public boolean canNext() {
-		// TODO Auto-generated method stub
 		return true;
 	}
 }

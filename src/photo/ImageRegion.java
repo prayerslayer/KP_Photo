@@ -2,6 +2,11 @@ package photo;
 
 import georegression.struct.point.Point2D_I32;
 
+/**
+ * Class to define a rectangular image region.
+ * @author xnikp
+ *
+ */
 public class ImageRegion {
 	public int[] tleft = new int[2];
 	public int[] bleft = new int[2];

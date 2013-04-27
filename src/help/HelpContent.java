@@ -1,5 +1,10 @@
 package help;
 
+/**
+ * Help for a certain processing step.
+ * @author xnikp
+ *
+ */
 public class HelpContent {
 	private String title;
 	private String content;

@@ -5,6 +5,11 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
+/**
+ * Factory for help dialogues.
+ * @author xnikp
+ *
+ */
 public class HelpFactory {
 	private static HelpFactory instance;
 	

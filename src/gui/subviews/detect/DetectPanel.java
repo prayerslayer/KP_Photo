@@ -38,14 +38,22 @@ import java.awt.Insets;
 import javax.swing.SwingConstants;
 
 /**
- * Panel to find interest points in images.
+ * UI to find interest points in images.
  * @author xnikp
  *
  */
 public class DetectPanel extends SubView {
-	
+	/**
+	 * ALL the images
+	 */
 	private List<BufferedImage> images;
+	/**
+	 * Fast hessian parameters
+	 */
 	private FastHessianConfig config;
+	/**
+	 * Interest points in images
+	 */
 	private Map<BufferedImage, List<InterestPoint>> interests;
 	private int currentImage = 0;
 	private JLabel lbImage;
@@ -54,6 +62,9 @@ public class DetectPanel extends SubView {
 	private JButton btFindIP;
 	private JButton btSettingsIP;
 	
+	/**
+	 * Creates new DetectPanel
+	 */
 	public DetectPanel() {
 		setLayout(new BorderLayout(0, 0));
 		

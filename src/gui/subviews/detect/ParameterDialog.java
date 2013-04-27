@@ -14,7 +14,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 /**
- * Dialogue for interest point parameter.
+ * Dialogue for interest point detection parameters.
  * @author xnikp
  *
  */

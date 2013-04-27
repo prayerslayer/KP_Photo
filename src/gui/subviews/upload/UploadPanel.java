@@ -33,6 +33,11 @@ import java.beans.PropertyChangeListener;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+/**
+ * UI for image load step
+ * @author xnikp
+ *
+ */
 public class UploadPanel extends SubView implements Observer {
 
 	private JScrollPane spImages;
@@ -53,9 +58,9 @@ public class UploadPanel extends SubView implements Observer {
 		
 		JButton btAdd = new JButton("Eigene Bilder laden");
 
-		btAdd.addMouseListener(new MouseAdapter() {
+		btAdd.addActionListener(new ActionListener() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
+			public void actionPerformed(ActionEvent e) {
 				JFileChooser chooser = new JFileChooser();
 				// We don't want "all files". Who knows what could happen!
 				chooser.setMultiSelectionEnabled( true );
@@ -124,6 +129,11 @@ public class UploadPanel extends SubView implements Observer {
 		add(spImages, BorderLayout.CENTER);
 	}
 	
+	/**
+	 * Loads an image from given stream and displays it
+	 * @param filename
+	 * @param stream
+	 */
 	private void loadImage( String filename, InputStream stream ) {
 		//read image
 		try {

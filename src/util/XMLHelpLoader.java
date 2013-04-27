@@ -4,6 +4,7 @@ import help.HelpContent;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.ParseException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -16,8 +17,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * Loads help contents from help/hilfe.xml file.
+ * 
+ * @author xnikp
+ *
+ */
 public class XMLHelpLoader {
 	private static XMLHelpLoader instance;
+	//tag names
 	private String schritt = "schritt";
 	private String beschreibung = "beschreibung";
 	private String nummer = "nummer";
@@ -33,8 +41,13 @@ public class XMLHelpLoader {
 		return instance;
 	}
 	
+	/**
+	 * Loads desired help content. Returns empty content if no appropriate one is found.
+	 * @param step the desired help step
+	 * @return
+	 */
 	public HelpContent load( int step ) {
-		File xml = new File( getClass().getResource( "/help/hilfe.xml" ).getFile() );
+		InputStream xml = getClass().getResourceAsStream( "/help/hilfe.xml" );
 		HelpContent content = new HelpContent();
 		Document dom;
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -83,7 +96,7 @@ public class XMLHelpLoader {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			
+			// empty
 		}
 		return content;
 	}

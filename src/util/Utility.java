@@ -20,7 +20,7 @@ import boofcv.core.image.ConvertBufferedImage;
 import boofcv.struct.image.ImageBase;
 
 /**
- * Class with helper functions
+ * Class with image-related helper functions
  * @author xnikp
  *
  */
@@ -42,6 +42,12 @@ public class Utility {
 		return resizeImage( img, 1f );
 	}
 	
+	/**
+	 * Scales an image but uses BufferedImage.getScaledInstance (as opposed to scaleImage() ).
+	 * @param img
+	 * @param factor
+	 * @return
+	 */
 	public static Image resizeImage( BufferedImage img, double factor ) {
 		Image small;
 		float ratio = ( float ) img.getWidth() / img.getHeight();
@@ -70,6 +76,12 @@ public class Utility {
 		return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
 	}
 	
+	/**
+	 * Scales an image.
+	 * @param img the image
+	 * @param longestSide maximum size of longest side
+	 * @return scaled buffered image
+	 */
 	public static BufferedImage scaleImage( BufferedImage img, int longestSide ) {
 		int imgWidth = img.getWidth();
 	    int imgHeight = img.getHeight();
@@ -151,10 +163,21 @@ public class Utility {
 		return combined;
 	}
 	
+	/**
+	 * Saves image to temp folder.
+	 * 
+	 * @param output
+	 */
 	public static void saveImage( BufferedImage output ) {
 		saveImage( output, null );
 	}
 
+	/**
+	 * Saves image to temp folder.
+	 * 
+	 * @param output
+	 * @param filename desired file name
+	 */
 	public static void saveImage(BufferedImage output, String filename ) {
 		if ( filename == null) {
 			filename = output.hashCode() + "";
@@ -173,12 +196,22 @@ public class Utility {
 		}
 	}
 	
+	/**
+	 * Saves image to temp folder.
+	 * 
+	 * @param image
+	 */
 	public static void saveImage( ImageBase image ) {
 		BufferedImage output = new BufferedImage( image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB );
 		ConvertBufferedImage.convertTo( image, output );
 		saveImage( output );
 	}
 	
+	/**
+	 * Saves image to temp folder.
+	 * @param image
+	 * @param filename
+	 */
 	public static void saveImage( ImageBase image, String filename ) {
 		BufferedImage output = new BufferedImage( image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB );
 		ConvertBufferedImage.convertTo( image, output );

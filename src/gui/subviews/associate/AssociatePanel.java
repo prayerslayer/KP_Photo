@@ -26,15 +26,41 @@ import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+/**
+ * UI for interest point association step.
+ * @author xnikp
+ *
+ */
 public class AssociatePanel extends SubView {
+	/**
+	 * Left image
+	 */
 	private BufferedImage left;
+	/**
+	 * Right image
+	 */
 	private BufferedImage right;
+	/**
+	 * Both
+	 */
 	private BufferedImage combined;
+	/**
+	 * Interest points of all the images
+	 */
 	private Map<BufferedImage, List<InterestPoint>> images;
+	/**
+	 * All associations between interest points
+	 */
 	private List<PointAssociation> associations;
+	/**
+	 * Successful associations between interest points
+	 */
 	private List<PointAssociation> matches;
 	private JLabel lblImage;
 	
+	/**
+	 * Creates new AssociatePanel
+	 */
 	public AssociatePanel() {
 		setLayout(new BorderLayout(0, 0));
 		
@@ -57,6 +83,9 @@ public class AssociatePanel extends SubView {
 	}
 
 	@Override
+	/**
+	 * Draws UI controls
+	 */
 	public void init() {
 		controller = new AssociateController( this, StitcherFacade.getInstance() );
 		// get images and interest points
@@ -90,6 +119,9 @@ public class AssociatePanel extends SubView {
 		lblImage.setIcon( new ImageIcon( Utility.resizeImage( combined, 2f ) ) );
 	}
 	
+	/**
+	 * Draws associations between interest points in left and right image
+	 */
 	private void drawAssociations() {
 		List<InterestPoint> leftinterest = images.get( left );
 		List<InterestPoint> rightinterest = images.get( right );
@@ -108,6 +140,12 @@ public class AssociatePanel extends SubView {
 		lblImage.setIcon( new ImageIcon( Utility.resizeImage( combined, 2f ) ) );
 	}
 	
+	/**
+	 * Draw one association
+	 * @param l
+	 * @param r
+	 * @param match
+	 */
 	private void drawAssociation(InterestPoint l, InterestPoint r, boolean match) {
 		Graphics2D g = combined.createGraphics();
 		g.setColor( match ? Color.GREEN : Color.RED );

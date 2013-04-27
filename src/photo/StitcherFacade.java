@@ -52,12 +52,15 @@ import boofcv.struct.image.ImageUInt8;
 import boofcv.struct.image.MultiSpectral;
 
 /**
- * Singleton to encapsulate and hide various stitching functionality. Provides connection to library (OpenCV, BoofCV or whatever).
+ * Singleton to encapsulate and hide various stitching functionality. Provides connection to BoofCV library.
  * @author xnikp
  *
  */
 public class StitcherFacade {
 	private static StitcherFacade instance;
+	/**
+	 * Final panorama.
+	 */
 	private BufferedImage panorama;
 	/**
 	 * Corner points of regions in panorama
@@ -87,6 +90,9 @@ public class StitcherFacade {
 	private ScoreAssociation<SurfFeature> scorer;
 	private AssociateDescription<SurfFeature> association;
 	
+	/**
+	 * Creates a new StitcherFacade
+	 */
 	private StitcherFacade() {
 		registeredImages = new LinkedList<BufferedImage>();
 		images = new HashMap< BufferedImage, MultiSpectral< ImageFloat32 > >();
@@ -96,6 +102,10 @@ public class StitcherFacade {
 		matchedAssociations = new HashMap<ImagePair, List<PointAssociation>>();
 	}
 	
+	/**
+	 * Returns the singleton's instance
+	 * @return
+	 */
 	public static StitcherFacade getInstance() {
 		if ( instance == null )
 			instance = new StitcherFacade();
@@ -129,7 +139,6 @@ public class StitcherFacade {
 
 	/**
 	 * Adds an image to the stitching process.
-	 * @return The index of the image, -1 if it was not added
 	 * @param image The image to add
 	 */
 	public void registerImage( BufferedImage image ) {
@@ -151,10 +160,25 @@ public class StitcherFacade {
 		return registeredImages;
 	}
 	
+	/**
+	 * Returns successful associations between two images.
+	 * 
+	 * @param img1
+	 * @param img2
+	 * @return
+	 */
 	public List<PointAssociation> getMatchedAssociations( BufferedImage img1, BufferedImage img2 ) {
 		return matchedAssociations.get( new ImagePair( img1, img2 ) );
 	}
 	
+	/**
+	 * Projects a point into given homography (applies transformation matrix).
+	 * 
+	 * @param x0
+	 * @param y0
+	 * @param fromBtoWork
+	 * @return
+	 */
 	private Point2D_I32 projectPoint( int x0 , int y0 , Homography2D_F64 fromBtoWork )
 	{
 		Point2D_F64 result = new Point2D_F64();
@@ -162,6 +186,14 @@ public class StitcherFacade {
 		return new Point2D_I32((int)result.x,(int)result.y);
 	}
 	
+	/**
+	 * Cut panorama out of black canvas.
+	 * 
+	 * @param width
+	 * @param height
+	 * @return
+	 * @throws OrientationFailedException
+	 */
 	public BufferedImage makePanorama( int width, int height ) throws OrientationFailedException {
 		// stitch all images together
 		BufferedImage rawPano = stitchTogether( width, height, false );
@@ -179,6 +211,8 @@ public class StitcherFacade {
 		 * 5) Try to enlarge <amount of pixel> in every direction (top, left, bottom, right)
 		 * 		Enlargement is possible if there are (almost?) no white pixels in claimed area
 		 * 6) Repeat 5) until no further enlargement is possible
+		 * ===
+		 * Yes I know it would be more elegant and effective to use given homographies.
 		 */
 		
 		// 1) binarize image
@@ -439,6 +473,12 @@ public class StitcherFacade {
 		return output;
 	}
 	
+	/**
+	 * Check if there is a transformation matrix (homography) between two images and return it. Null if there is none.
+	 * @param img1
+	 * @param img2
+	 * @return
+	 */
 	private Homography findHomography( BufferedImage img1, BufferedImage img2 ) {
 		for ( Homography homo : orientedImages ) {
 			if ( homo.getImage1().equals(img1) && homo.getImage2().equals( img2 ) ) {
@@ -448,6 +488,12 @@ public class StitcherFacade {
 		return null;
 	}
 	
+	/**
+	 * Assumes images are ordered from left to right and calculates homographies between them.
+	 * 
+	 * @return
+	 * @throws OrientationFailedException
+	 */
 	public List<Homography> orientImages() throws OrientationFailedException {
 		// Assumes registeredImages are ordered from left to right
 		int size = registeredImages.size();
@@ -498,9 +544,8 @@ public class StitcherFacade {
 		// find homography with ransac
 		GenerateHomographyLinear modelFitter = new GenerateHomographyLinear( true );
 		DistanceHomographySq distance = new DistanceHomographySq();
-		//TODO define ransac iterations
-		int iterations = Math.round( associations.size() *( 1/2f) );
-		ModelMatcher<Homography2D_F64, AssociatedPair> modelMatcher = new Ransac<Homography2D_F64, AssociatedPair>( 100, modelFitter, distance, iterations, 5);
+		int iterations = Math.round( associations.size() *( 2/3f) );
+		ModelMatcher<Homography2D_F64, AssociatedPair> modelMatcher = new Ransac<Homography2D_F64, AssociatedPair>( System.currentTimeMillis(), modelFitter, distance, iterations, 5);
 		
 		if ( !modelMatcher.process( pairs ) )
 			throw new OrientationFailedException();
@@ -605,12 +650,23 @@ public class StitcherFacade {
 		return copy;
 	}
 	
+	/**
+	 * Converts color image to grayscale.
+	 * @param img
+	 * @return
+	 */
 	private ImageFloat32 grayscale( MultiSpectral<ImageFloat32> img ) {
 		ImageFloat32 gray = new ImageFloat32( img.getWidth(), img.getHeight() );
 		GPixelMath.averageBand(img, gray);
 		return gray;
 	}
 	
+	/**
+	 * Binarizes image
+	 * @param img
+	 * @param threshold
+	 * @return
+	 */
 	private BufferedImage binary( MultiSpectral<ImageFloat32> img, float threshold ) {
 		ImageFloat32 gray = grayscale( img );
 		ImageUInt8 bin = new ImageUInt8( gray.width, gray.height );

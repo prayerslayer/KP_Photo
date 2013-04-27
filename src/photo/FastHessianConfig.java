@@ -1,5 +1,10 @@
 package photo;
 
+/**
+ * Configuration for Fast Hessian interest point detection.
+ * @author xnikp
+ *
+ */
 public class FastHessianConfig {
 	/**
 	 * Minimum feature intensity. Image dependent.  Start tuning at 1.

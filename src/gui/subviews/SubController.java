@@ -7,7 +7,7 @@ import javax.swing.JPanel;
 import photo.StitcherFacade;
 
 /**
- * Class that encapsulates methods used in each step, provides connecton to StitcherFacade.
+ * Class that encapsulates methods used in each processing step, provides connecton to StitcherFacade.
  * @author xnikp
  *
  */

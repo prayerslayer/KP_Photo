@@ -13,6 +13,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 
+/**
+ * Base class for help dialogues.
+ * @author xnikp
+ *
+ */
 public class BasicHelp extends JFrame {
 	protected JPanel pnContent;
 	protected JLabel lbHeader;
@@ -22,7 +27,11 @@ public class BasicHelp extends JFrame {
 	protected void close() {
 		this.setVisible( false );
 	}
-
+	
+	/**
+	 * Creates a help dialogue for given step
+	 * @param helpstep
+	 */
 	public BasicHelp( int helpstep ) {
 		step = helpstep;
 		pnContent = new JPanel();
@@ -38,7 +47,10 @@ public class BasicHelp extends JFrame {
 		this.setSize(600, 400);
 		loadContent();
 	}
-
+	
+	/**
+	 * Loads help content for step from xml file.
+	 */
 	protected void loadContent( ) {
 		HelpContent help = XMLHelpLoader.getInstance().load( this.step );
 		lbHeader = new JLabel( help.getTitle() );
