@@ -10,7 +10,10 @@ import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -87,7 +90,12 @@ public class UploadPanel extends SubView implements Observer {
 				if ( action == JFileChooser.APPROVE_OPTION ) {
 					File[] files = chooser.getSelectedFiles();
 					for ( File file : files ) {
-						loadImage( file );
+						try {
+							loadImage( file.getName(), new java.io.BufferedInputStream( new java.io.FileInputStream( file ) ) );
+						} catch (FileNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 					}
 					spImages.revalidate();
 				}
@@ -99,12 +107,12 @@ public class UploadPanel extends SubView implements Observer {
 		btnStandardbilderLaden = new JButton("Standardbilder laden");
 		btnStandardbilderLaden.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				File pano1 = new File( getClass().getResource( "/gui/images/panorama1.jpg" ).getFile() );
-				File pano2 = new File( getClass().getResource( "/gui/images/panorama2.jpg" ).getFile() );
-				File pano3 = new File( getClass().getResource( "/gui/images/panorama3.jpg" ).getFile() );
-				loadImage( pano1 );
-				loadImage( pano2 );
-				loadImage( pano3 );
+				InputStream pano1 = getClass().getResourceAsStream( "/gui/images/panorama1.jpg" );
+				InputStream pano2 = getClass().getResourceAsStream( "/gui/images/panorama2.jpg" );
+				InputStream pano3 = getClass().getResourceAsStream( "/gui/images/panorama3.jpg" );
+				loadImage( "pano1", pano1 );
+				loadImage( "pano2", pano2 );
+				loadImage( "pano3", pano3 );
 			}
 		});
 		pnButtons.add(btnStandardbilderLaden);
@@ -116,19 +124,18 @@ public class UploadPanel extends SubView implements Observer {
 		add(spImages, BorderLayout.CENTER);
 	}
 	
-	private void loadImage( File file ) {
+	private void loadImage( String filename, InputStream stream ) {
 		//read image
 		try {
-			
 
-			BufferedImage img = ImageIO.read( file );
+			BufferedImage img = ImageIO.read( stream );
 			//resize if necessary
 			if ( img.getWidth() > 1000 || img.getHeight() > 1000 )
 				img = Utility.scaleImage(img, 1000 );
 			//register image at controller for further calculations
 			((UploadController) controller).registerImage( img );
 			
-			ImagePanel imgPanel = new ImagePanel( file.getName(), img );
+			ImagePanel imgPanel = new ImagePanel( filename, img );
 			imgPanel.addPropertyChangeListener("delete", new PropertyChangeListener()  {
 				
 				@Override
@@ -147,9 +154,9 @@ public class UploadPanel extends SubView implements Observer {
 			});
 			pnImages.add( imgPanel );
 			pnImages.setSize( spImages.getWidth() - 1, spImages.getHeight() );
-			System.out.println( "Added image " + file.getName() + " ( " + img.getWidth() + " x " + img.getHeight() + " px )" );
+			System.out.println( "Added image " + filename + " ( " + img.getWidth() + " x " + img.getHeight() + " px )" );
 		}  catch ( IOException ioex ) {
-			System.err.println( "Could not load " + file.getName() );
+			System.err.println( "Could not load image " + filename );
 			ioex.printStackTrace();
 		} catch ( Exception ex ) {
 			System.err.println( ex.toString() );
