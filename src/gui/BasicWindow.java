@@ -236,7 +236,6 @@ public class BasicWindow extends JFrame {
 		caret.setUpdatePolicy( DefaultCaret.ALWAYS_UPDATE );
 		taInfo.setDropMode(DropMode.INSERT);
 		taInfo.setRows(5);
-		taInfo.setText("Info\ngoes\nhere\nyo");
 		taInfo.setFont(new Font("monospaced", Font.PLAIN, 11));
 		
 		JScrollPane scrollPane = new JScrollPane( taInfo );
