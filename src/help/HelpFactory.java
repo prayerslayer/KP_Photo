@@ -12,12 +12,12 @@ public class HelpFactory {
 	
 	private HelpFactory() {
 		helps = new LinkedList<BasicHelp>();
-		helps.add( 0, new HelloHelp() );
-		helps.add( 1, new LoadHelp() );
-		helps.add( 2, new DetectHelp() );
-		helps.add( 3, new MatchHelp() );
-		helps.add( 4, new OrientHelp() );
-		helps.add( 5, new BlendHelp() );
+		helps.add( 0, new HelloHelp( 0 ) );
+		helps.add( 1, new LoadHelp( 1 ) );
+		helps.add( 2, new DetectHelp( 2 ) );
+		helps.add( 3, new MatchHelp( 3 ) );
+		helps.add( 4, new OrientHelp( 4 ) );
+		helps.add( 5, new BlendHelp( 5 ) );
 	}
 	
 	public static HelpFactory getInstance() {
