@@ -170,7 +170,7 @@ public class StitcherFacade {
 		// task: cut black area
 		
 		/**
-		 * Inverse Star Wars or Inside-out Gargabe Compactor (IGC) algorithm
+		 * Inverse Star Wars or Inside-out Gargabe Compactor (IOGC) algorithm
 		 * ===
 		 * 1) Binarize Image
 		 * 2) Detect Line Segments
@@ -325,9 +325,11 @@ public class StitcherFacade {
 	 * @return panorama image
 	 * @throws OrientationFailedException 
 	 */
-	public BufferedImage stitchTogether( int width, int height, boolean preview ) throws OrientationFailedException {
+	public BufferedImage stitchTogether( int desiredWidth, int desiredHeight, boolean preview ) throws OrientationFailedException {
 		int size = registeredImages.size();
 		int m = size % 2 == 0 ? size / 2 : ( size - 1 ) / 2;
+		int width = size * registeredImages.get( 0 ).getWidth();
+		int height = registeredImages.get( 0 ).getHeight();
 		regions.clear();
 		System.out.println( "Middle index: " + m );
 		// orient all image pairs
@@ -433,7 +435,7 @@ public class StitcherFacade {
 			}
 			g.dispose();
 		}
-		Utility.saveImage( output );
+		Utility.saveImage( Utility.scaleImage( output ) );
 		return output;
 	}
 	
