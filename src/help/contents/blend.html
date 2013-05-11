@@ -1,0 +1,60 @@
+<doctype html>
+
+<html>
+	<head>
+		<meta encoding="UTF-8">
+		<style type="text/css">
+			body {
+				max-width: 700px;
+				margin: 0 auto;
+				padding-bottom: 50px;
+				padding-top: 50px;
+			}
+			h1, h2, h3, h4, h5, h6 {
+				font-family: Helvetica, Arial, sans-serif;
+			}
+			h1 {
+				font-size: 72px;
+				line-height: 96px;
+			}
+
+			h2 {
+				font-size: 36px;
+				line-height: 48px;
+			}
+			p, ul, ol {
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			div.related:before {
+				content: "Verwandte Links:";
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			img.picture {
+				width: 100%;
+				border-radius: 5px;
+			}
+		</style>
+		<title>Lernsoftware Panoramaerstellung</title>
+	</head>
+	
+	<body>
+		<h1>Bilder vermischen</h1>
+		<p>
+			Im vorangehenden Schritt wurden die relativ orientierten Bilder auf einem schwarzen Hintergrund übereinander gelegt. Für ein Panorama ist das noch nicht ausreichend. Der schwarze Hintergrund muss entfernt und die harten Übergänge zwischen den einzelnen Bildern abgemildert (überblendet) werden. Ersteres wird in dieser Software mit einem Algorithmus gemacht, der ein kleines Rechteck in der Mitte des Bildes platziert und kontinuierlich in alle Richtung wachsen lässt, solange mindestens 95 % der Pixel im neu zu akquirierenden Bereich schwarz sind. Die Übergänge zwischen den Bildern weicher zu gestalten hätte den Rahmen des Komplexpraktikums gesprengt und war leider zeitlich nicht möglich.
+		</p>
+		<div class="related">
+			<ul>
+				<li><a href="http://en.wikipedia.org/wiki/Feathering">Feathering in der englischen Wikipedia</a></li>
+			</ul>
+		</div>
+		<h2>Bedienung</h2>
+		<p>
+			Mit einem Klick auf den Button mit der Diskette kann das Panorama abgespeichert werden.
+		</p>
+		<img class="picture" src="blend.png" />
+	</body>
+</html> 

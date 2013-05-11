@@ -54,7 +54,7 @@ public class BasicHelp extends JFrame {
 		lbHeader = new JLabel( "Hilfe" );
 		lbHeader.setFont(new Font("Lucida Grande", Font.BOLD, 13));
 		lbHeader.setHorizontalAlignment(SwingConstants.CENTER);
-		taContent = new JTextArea( "Die Hilfe wurde in ihrem Standardbrowser geöffnet." );
+		taContent = new JTextArea( "Die Hilfe wurde in ihrem Browser geöffnet." );
 		taContent.setLineWrap( true );
 		taContent.setWrapStyleWord( true );
 		taContent.setEditable( false );

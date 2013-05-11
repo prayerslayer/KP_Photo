@@ -1,0 +1,68 @@
+<doctype html>
+
+<html>
+	<head>
+		<meta encoding="UTF-8">
+		<style type="text/css">
+			body {
+				max-width: 700px;
+				margin: 0 auto;
+				padding-bottom: 50px;
+				padding-top: 50px;
+			}
+			h1, h2, h3, h4, h5, h6 {
+				font-family: Helvetica, Arial, sans-serif;
+			}
+			h1 {
+				font-size: 72px;
+				line-height: 96px;
+			}
+
+			h2 {
+				font-size: 36px;
+				line-height: 48px;
+			}
+			p, ul, ol {
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			div.related:before {
+				content: "Verwandte Links:";
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			img.picture {
+				width: 100%;
+				border-radius: 5px;
+			}
+		</style>
+		<title>Lernsoftware Panoramaerstellung</title>
+	</head>
+	
+	<body>
+		<h1>Bilder orientieren</h1>
+		<p>
+			Im vorangehenden Schritt wurden Interest Points in allen Bildern assoziiert und so homologe Punktpaare gefunden. Um die Bilder relativ zueinander orientieren (und damit zusammenzusetzen) zu können, muss eine Transformationsmatrix berechnet werden, die beschreibt wo ein Punkt Bild A in Bild B liegt. Die relative Orientierung besteht aus fünf Parametern (Translation in XY, Rotation in XYZ) und ist maßstabslos, deswegen werden fünf homologe Punktepaare benötigt. Die Transformationsmatrix wird mit Hilfe von RANSAC (Random Sample Consensus) berechnet. RANSAC wählt dabei fünf zufällige homologe Punktepaare, berechnet eine Homographie (Transformationsmatrix) und überprüft die Anzahl der Inlier. Die Parameter für RANSAC sind wie folgt:
+			<ul>
+				<li>Maximale Iterationen: 2/3 * Anzahl der homologen Punktepaare</li>
+				<li>Minimale Samplegröße: 5</li>
+				<li>Slope: 5 Pixel</li>
+				<li>Nötiger Consensus: Alle Punktepaare</li>
+			</ul>
+		</p>
+		<div class="related">
+			<ul>
+				<li><a href="http://en.wikipedia.org/wiki/RANSAC">RANSAC in der englischen Wikipedia</a></li>
+				<li><a href="http://dl.acm.org/citation.cfm?id=358692">RANSAC Paper bei ACM</a></li>
+				<li><a href="http://www.cs.washington.edu/education/courses/cse576/11sp/notes/ransac.pdf">Folien mit RANSAC Beispiel</a></li>
+			</ul>
+		</div>
+		<h2>Bedienung</h2>
+		<p>
+			In diesem Schritt wird die relative Orientierung zwischen den Bildern dargestellt, in dem sie übereinander gelegt werden.
+		</p>
+		<img class="picture" src="orient.png" />
+	</body>
+</html> 

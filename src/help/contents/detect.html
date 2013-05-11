@@ -1,0 +1,61 @@
+<doctype html>
+
+<html>
+	<head>
+		<meta encoding="UTF-8">
+		<style type="text/css">
+			body {
+				max-width: 700px;
+				margin: 0 auto;
+				padding-bottom: 50px;
+				padding-top: 50px;
+			}
+			h1, h2, h3, h4, h5, h6 {
+				font-family: Helvetica, Arial, sans-serif;
+			}
+			h1 {
+				font-size: 72px;
+				line-height: 96px;
+			}
+
+			h2 {
+				font-size: 36px;
+				line-height: 48px;
+			}
+			p, ul, ol {
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			div.related:before {
+				content: "Verwandte Links:";
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			img.picture {
+				width: 100%;
+				border-radius: 5px;
+			}
+		</style>
+		<title>Lernsoftware Panoramaerstellung</title>
+	</head>
+	
+	<body>
+		<h1>Interest Points detektieren</h1>
+		<p>
+			Um die geladenen Bilder orientieren zu können, müssen zuerst markante Punkte (<strong>Interest Points</strong>) in ihnen gefunden werden. Das geschieht mit Hilfe des <strong>Fast Hessian</strong> Feature Detectors, die gefundenen Interest Points werden dann mit dem <strong>SURF</strong> Feature Descriptor (Speeded Up Robust Features) beschrieben.
+		</p>
+		<div class="related">
+			<ul>
+				<li><a href="https://en.wikipedia.org/wiki/SURF">SURF in der englischen Wikipedia</a></li>
+				<li><a href="http://www.vision.ee.ethz.ch/~surf/eccv06.pdf">SURF Paper</a></li>
+			</ul>
+		</div>
+		<h2>Bedienung</h2>
+		<p>
+			Mit dem Button <em>Finde Interest Points</em> werden im aktuellen Bild IPs gefunden und mit roten Kreisen markiert. Über die Buttons <em>&lt;&lt;</em> und <em>&gt;&gt;</em> wird zwischen den geladenen Bildern hin und her geschalten. Der Button <em>Parameter einstellen</em> öffnet einen Dialog mit dem die Parameter für den Fast Hessian Feature Detector angegeben werden können. Es ist nicht nötig alle Bilder durchzugehen und IP manuell zu detektieren, nach einem Klick auf <em>Nächster Schritt</em> werden alle IPs in noch nicht verarbeiteten Bildern automatisch gesucht.
+		</p>
+		<img class="picture" src="detect.png" />
+	</body>
+</html> 

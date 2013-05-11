@@ -1,0 +1,61 @@
+<doctype html>
+
+<html>
+	<head>
+		<meta encoding="UTF-8">
+		<style type="text/css">
+			body {
+				max-width: 700px;
+				margin: 0 auto;
+				padding-bottom: 50px;
+				padding-top: 50px;
+			}
+			h1, h2, h3, h4, h5, h6 {
+				font-family: Helvetica, Arial, sans-serif;
+			}
+			h1 {
+				font-size: 72px;
+				line-height: 96px;
+			}
+
+			h2 {
+				font-size: 36px;
+				line-height: 48px;
+			}
+			p, ul, ol {
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			div.related:before {
+				content: "Verwandte Links:";
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			img.picture {
+				width: 100%;
+				border-radius: 5px;
+			}
+		</style>
+		<title>Lernsoftware Panoramaerstellung</title>
+	</head>
+	
+	<body>
+		<h1>Interest Points matchen</h1>
+		<p>
+			Im vorangehenden Schritt wurden Interest Points in allen Bildern detektiert. Um die Bilder relativ zueinander orientieren (und damit zusammenzusetzen) zu können, muss derselbe Punkt in benachbarten Bilden identifiziert, also ein Matching zwischen jedem Punkt in Bild A und Bild B berechnet werden. Dazu wird ein Greedy-Algorithmus basierend auf der Methode der kleinsten Quadrate der SURF Deskriptoren angewandt: Jeder Punkt in Bild A wird mit dem bestpassenden in Bild B gematcht.
+		</p>
+		<div class="related">
+			<ul>
+				<li><a href="http://de.wikipedia.org/wiki/Greedy-Algorithmus">Greedy-Algorithmus</a></li>
+				<li><a href="http://de.wikipedia.org/wiki/Methode_der_kleinsten_Quadrate">Methode der kleinsten Quadrate</a></li>
+			</ul>
+		</div>
+		<h2>Bedienung</h2>
+		<p>
+			Es werden beispielhaft die homologen Punktepaare der ersten zwei Bilder dargestellt (Button <em>Alle Assoziationen</em>). Grüne Linien markieren Punktepaare, welche die relative Orientierung beschreiben - ja, hier wird eigentlich einen Schritt vor gegriffen. Rote Linien markieren fehlerhafte Matches.
+		</p>
+		<img class="picture" src="match.png" />
+	</body>
+</html> 

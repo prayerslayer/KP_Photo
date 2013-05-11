@@ -2,11 +2,63 @@
 
 <html>
 	<head>
-		<title>Yo</title>
+		<meta encoding="UTF-8">
+		<title>Lernsoftware Panoramaerstellung</title>
+		<style type="text/css">
+			body {
+				max-width: 700px;
+				margin: 0 auto;
+				padding-bottom: 50px;
+				padding-top: 50px;
+			}
+			h1, h2, h3, h4, h5, h6 {
+				font-family: Helvetica, Arial, sans-serif;
+			}
+			h1 {
+				font-size: 72px;
+				line-height: 96px;
+			}
+
+			h2 {
+				font-size: 36px;
+				line-height: 48px;
+			}
+			p, ul, ol {
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			div.related:before {
+				content: "Verwandte Links:";
+				font-family: "Minion Pro", Georgia, serif;
+				font-size: 20px;
+				line-height: 32px;
+			}
+			img.picture {
+				width: 100%;
+				border-radius: 5px;
+			}
+		</style>
 	</head>
 	
 	<body>
-		<p>This is a paragraph</p>
-		<p>This is another paragraph.</p>
+		<h1>Lernsoftware Panorameerstellung</h1>
+		<h3>Autoren: Nikolaus Piccolotto, Sven Jordan</h3>
+		<h2>Intro</h2>
+		<p>
+			Willkommen zur Lernsoftware Panoramaerstellung. Der Vorgang der Panoramaerstellung besteht aus fünf Schritten, die hier nach der Reihe veranschaulicht werden. Als erstes werden die Teilbilder des Panoramas geladen. In diesen wird nach markanten, kontrastreichen Punkten (Interest Points) gesucht. Die gefundenen Interest Points werden in benachbarten Bildern miteinander assoziiert, das bedeutet deren Featurebeschreibungen verglichen und die ähnlichsten einander zugeordnet. Mittels RANSAC wird nach Punktpaaren gesucht, die eine Affintransformation beschreiben. Die Bilder werden entsprechend der gefundenen Parameter transformiert und übereinander gelegt. In professioneller Panoramasoftware würden die Ecken der unterschiedlichen Bilder noch überblendet, bevor das Panorama abgespeichert werden kann.
+		</p>
+		<div class="related">
+			<ul>
+				<li><a href="http://de.wikipedia.org/wiki/Panoramabild">Panoramabild</a></li>
+				<li><a href="http://de.wikipedia.org/wiki/Stitching">Stitching</a></li>
+				<li><a href="http://research.microsoft.com/apps/pubs/default.aspx?id=70092">Überblickspaper: Image Alignment &amp; Stitching</a></li>
+			</ul>
+		</div>
+		<h2>Bedienung</h2>
+		<p>
+			Zur Navigation benutzen Sie bitte die beiden Vor/Zurück Buttons unten links bzw. rechts. Genauere Informationen zu jedem Schritt bekommen Sie über den Button 'Hilfe' oben rechts; eine entsprechende Hilfeseite wie diese wird in ihrem Standardprogramm für <code>.html</code> Dateien geöffnet.
+		</p>	
+		<img class="picture" src="hello.png" />
 	</body>
 </html> 
