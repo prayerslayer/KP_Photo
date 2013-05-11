@@ -144,7 +144,7 @@ public class BasicWindow extends JFrame {
 	 * Shows the help dialogue.
 	 */
 	public void showHelp() {
-		HelpFactory.getInstance().getHelp( this.activeStep ).setVisible( true );
+		HelpFactory.getInstance().openHelp( this.activeStep );
 	}
 	
 	/**
@@ -178,37 +178,37 @@ public class BasicWindow extends JFrame {
 		panel.add(pnBreadcrumbs, BorderLayout.NORTH);
 		pnBreadcrumbs.setLayout(new GridLayout(1, 0, 0, 0));
 		
-		JLabel lbStep0 = new JLabel("(0) Info");
+		JLabel lbStep0 = new JLabel("(0) Intro");
 		lbStep0.setFont(new Font("sansserif", Font.BOLD, 16));
 		lbStep0.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep0);
 		
-		JLabel lbStep1 = new JLabel("(1) Load");
+		JLabel lbStep1 = new JLabel("(1) Laden");
 		lbStep1.setFont(new Font("sansserif", Font.PLAIN, 14));
 		lbStep1.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep1);
 		
-		JLabel lbStep2 = new JLabel("(2) Detect IP");
+		JLabel lbStep2 = new JLabel("(2) Detektieren");
 		lbStep2.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep2.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep2);
 		
-		JLabel lbStep3 = new JLabel("(3) Match IP");
+		JLabel lbStep3 = new JLabel("(3) Matchen");
 		lbStep3.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep3.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep3);
 		
-		JLabel lbStep4 = new JLabel("(4) Orient");
+		JLabel lbStep4 = new JLabel("(4) Orientieren");
 		lbStep4.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep4.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep4);
 		
-		JLabel lbStep5 = new JLabel("(5) Blend");
+		JLabel lbStep5 = new JLabel("(5) Vermischen");
 		lbStep5.setFont(new Font("sansSerif", Font.PLAIN, 14));
 		lbStep5.setHorizontalAlignment(SwingConstants.CENTER);
 		pnBreadcrumbs.add(lbStep5);
 		
-		JButton btHelp = new JButton("Help");
+		JButton btHelp = new JButton("Hilfe");
 		btHelp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				showHelp();

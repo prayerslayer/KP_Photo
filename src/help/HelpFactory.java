@@ -1,5 +1,8 @@
 package help;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -12,17 +15,18 @@ import javax.swing.JFrame;
  */
 public class HelpFactory {
 	private static HelpFactory instance;
-	
-	private List<BasicHelp> helps;
+	private LinkedList<String> helps;
+	private BasicHelp helpFrame;
 	
 	private HelpFactory() {
-		helps = new LinkedList<BasicHelp>();
-		helps.add( 0, new HelloHelp( 0 ) );
-		helps.add( 1, new LoadHelp( 1 ) );
-		helps.add( 2, new DetectHelp( 2 ) );
-		helps.add( 3, new MatchHelp( 3 ) );
-		helps.add( 4, new OrientHelp( 4 ) );
-		helps.add( 5, new BlendHelp( 5 ) );
+		helpFrame = new BasicHelp();
+		helps = new LinkedList<String>();
+		helps.add( 0, "hello" );
+		helps.add( 1, "load" );
+		helps.add( 2, "detect" );
+		helps.add( 3, "match" );
+		helps.add( 4, "orient" );
+		helps.add( 5, "blend" );
 	}
 	
 	public static HelpFactory getInstance() {
@@ -31,10 +35,19 @@ public class HelpFactory {
 		return instance;
 	}
 	
-	public JFrame getHelp( int step ) {
+	public void openHelp( int step ) {
 		if ( step < 0 || step >= helps.size() )
 			throw new IllegalArgumentException( step + "");
 		
-		return helps.get( step );
+		try {
+			Desktop desktop = Desktop.getDesktop();
+			desktop.browse( getClass().getResource("/help/contents/" + helps.get( step ) + ".html").toURI() );
+		} catch (IOException | URISyntaxException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+		helpFrame.setVisible( true );
+		
 	}
 }

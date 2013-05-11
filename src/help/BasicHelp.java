@@ -3,10 +3,11 @@ package help;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
+
 import java.awt.BorderLayout;
 import javax.swing.JButton;
 
-import util.XMLHelpLoader;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -21,8 +22,7 @@ import java.awt.Font;
 public class BasicHelp extends JFrame {
 	protected JPanel pnContent;
 	protected JLabel lbHeader;
-	protected JLabel lbHelp;
-	protected int step;
+	protected JTextArea taContent;
 	
 	protected void close() {
 		this.setVisible( false );
@@ -32,8 +32,7 @@ public class BasicHelp extends JFrame {
 	 * Creates a help dialogue for given step
 	 * @param helpstep
 	 */
-	public BasicHelp( int helpstep ) {
-		step = helpstep;
+	public BasicHelp( ) {
 		pnContent = new JPanel();
 		getContentPane().add(pnContent, BorderLayout.CENTER);
 		
@@ -44,7 +43,7 @@ public class BasicHelp extends JFrame {
 			}
 		});
 		getContentPane().add(btClose, BorderLayout.SOUTH);
-		this.setSize(600, 400);
+		this.setSize(300, 200);
 		loadContent();
 	}
 	
@@ -52,15 +51,17 @@ public class BasicHelp extends JFrame {
 	 * Loads help content for step from xml file.
 	 */
 	protected void loadContent( ) {
-		HelpContent help = XMLHelpLoader.getInstance().load( this.step );
-		lbHeader = new JLabel( help.getTitle() );
+		lbHeader = new JLabel( "Hilfe" );
 		lbHeader.setFont(new Font("Lucida Grande", Font.BOLD, 13));
 		lbHeader.setHorizontalAlignment(SwingConstants.CENTER);
-		lbHelp = new JLabel( help.getContent() );
-		lbHelp.setVerticalAlignment(SwingConstants.TOP);
+		taContent = new JTextArea( "Die Hilfe wurde in ihrem Standardbrowser geöffnet." );
+		taContent.setLineWrap( true );
+		taContent.setWrapStyleWord( true );
+		taContent.setEditable( false );
+		taContent.setBackground( this.getBackground() );
 		pnContent.setLayout(new BorderLayout(0, 0));
 		pnContent.add( lbHeader, BorderLayout.NORTH );
-		pnContent.add( lbHelp );
+		pnContent.add( taContent );
 	}
 	
 }
