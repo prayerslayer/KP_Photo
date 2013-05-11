@@ -532,6 +532,10 @@ public class StitcherFacade {
 		List<PointAssociation> associations = associateInterestPoints(img1, img2);
 		InterestPoint ip1, ip2;
 		Point2D_F64 p1, p2;
+		
+		if ( associations.size() < 5 )
+			throw new OrientationFailedException( );
+		
 		for ( int i = 0; i <= associations.size() - 1; i++ ) {
 			PointAssociation pa = associations.get(i); 
 			ip1 = interestPoints.get( img1 ).get( pa.getSource() );
